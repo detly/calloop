@@ -120,7 +120,7 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">EventDispatcher</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">sources</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>).<span class="ident">cloned</span>().<span class="ident">collect</span>()
+        <span class="self">self</span>.<span class="ident">sources</span>.<span class="ident">iter</span>().<span class="ident">flatten</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>()
     }
 }
 
