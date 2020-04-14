@@ -290,6 +290,13 @@
 <span id="290">290</span>
 <span id="291">291</span>
 <span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! An MPSC channel whose receiving end is an event source</span>
 <span class="doccomment">//!</span>
@@ -402,9 +409,16 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is the event source to be inserted into your `EventLoop`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">receiver</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">mpsc</span>::<span class="ident">Receiver</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">receiver</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">mpsc</span>::<span class="ident">Receiver</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">waker</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Waker</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
+
+<span class="comment">// This impl is safe because the Channel is only able to move around threads</span>
+<span class="comment">// when it is not inserted into an event loop. (Otherwise it is stuck into</span>
+<span class="comment">// a Source&lt;_&gt; and the internals of calloop, which are not Send).</span>
+<span class="comment">// At this point, the Arc&lt;Receiver&gt; has a count of 1, and it is obviously</span>
+<span class="comment">// safe to Send between threads.</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Send</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
 
 <span class="doccomment">/// Create a new asynchronous channel</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Sender</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) {
@@ -416,7 +430,7 @@
             <span class="ident">waker</span>: <span class="ident">waker</span>.<span class="ident">clone</span>(),
         },
         <span class="ident">Channel</span> {
-            <span class="ident">receiver</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">receiver</span>),
+            <span class="ident">receiver</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">receiver</span>),
             <span class="ident">waker</span>,
         },
     )
@@ -432,7 +446,7 @@
             <span class="ident">waker</span>: <span class="ident">waker</span>.<span class="ident">clone</span>(),
         },
         <span class="ident">Channel</span> {
-            <span class="ident">receiver</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">receiver</span>),
+            <span class="ident">receiver</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">receiver</span>),
             <span class="ident">waker</span>,
         },
     )
@@ -457,7 +471,7 @@
 
 <span class="kw">struct</span> <span class="ident">Dispatcher</span><span class="op">&lt;</span><span class="ident">Data</span>, <span class="ident">T</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>)<span class="op">&gt;</span> {
     <span class="ident">_data</span>: <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>)<span class="op">&gt;</span>,
-    <span class="ident">receiver</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">mpsc</span>::<span class="ident">Receiver</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">receiver</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">mpsc</span>::<span class="ident">Receiver</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">callback</span>: <span class="ident">F</span>,
 }
 
