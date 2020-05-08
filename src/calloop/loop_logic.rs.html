@@ -780,6 +780,37 @@
 <span id="780">780</span>
 <span id="781">781</span>
 <span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
@@ -790,10 +821,10 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">list</span>::<span class="ident">SourceList</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sources</span>::{<span class="ident">EventSource</span>, <span class="ident">Idle</span>, <span class="ident">Source</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sources</span>::{<span class="ident">EventSource</span>, <span class="ident">Idle</span>, <span class="ident">IdleDispatcher</span>, <span class="ident">Source</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Poll</span>;
 
-<span class="kw">type</span> <span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>)<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">type</span> <span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">IdleDispatcher</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="kw">struct</span> <span class="ident">LoopInner</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
     <span class="ident">poll</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Poll</span><span class="op">&gt;</span>,
@@ -841,7 +872,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Insert an new event source in the loop</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The provided callback will be called during the dispatching cycles whenever the</span>
@@ -854,7 +885,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sources</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">sources</span>.<span class="ident">borrow_mut</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
 
-        <span class="kw">let</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">Dispatcher</span>::<span class="op">&lt;</span><span class="ident">Data</span>, <span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>::<span class="ident">new</span>(
+        <span class="kw">let</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">Dispatcher</span>::<span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>::<span class="ident">new</span>(
             <span class="ident">source</span>, <span class="ident">callback</span>,
         )));
         <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">add_source</span>(<span class="ident">dispatcher</span>);
@@ -887,11 +918,11 @@
     <span class="doccomment">/// finished processing all pending events from the sources and becomes idle.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_idle</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Idle</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opt_cb</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">callback</span>);
-        <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="prelude-val">Some</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span><span class="op">|</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cb</span>) <span class="op">=</span> <span class="ident">opt_cb</span>.<span class="ident">take</span>() {
                 <span class="ident">cb</span>(<span class="ident">data</span>);
             }
-        }) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>)<span class="op">&gt;</span>)));
+        })));
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">idles</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">callback</span>.<span class="ident">clone</span>());
         <span class="ident">Idle</span> { <span class="ident">callback</span> }
     }
@@ -1009,7 +1040,7 @@
     <span class="ident">ping</span>: <span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">ping</span>::<span class="ident">Ping</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a new event loop</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Fails if the initialization of the polling system failed.</span>
@@ -1073,9 +1104,7 @@
     <span class="kw">fn</span> <span class="ident">dispatch_idles</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) {
         <span class="kw">let</span> <span class="ident">idles</span> <span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">inner</span>.<span class="ident">idles</span>.<span class="ident">borrow_mut</span>(), <span class="ident">Vec</span>::<span class="ident">new</span>());
         <span class="kw">for</span> <span class="ident">idle</span> <span class="kw">in</span> <span class="ident">idles</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">callback</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="ident">idle</span>.<span class="ident">borrow_mut</span>() {
-                <span class="ident">callback</span>(<span class="ident">data</span>);
-            }
+            <span class="ident">idle</span>.<span class="ident">borrow_mut</span>().<span class="ident">dispatch</span>(<span class="ident">data</span>);
         }
     }
 
@@ -1527,6 +1556,39 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">opt_src</span>.<span class="ident">is_none</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">non_static_data</span>() {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">mpsc</span>;
+
+        <span class="kw">let</span> (<span class="ident">sender</span>, <span class="ident">receiver</span>) <span class="op">=</span> <span class="ident">mpsc</span>::<span class="ident">channel</span>();
+
+        {
+            <span class="kw">struct</span> <span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">mpsc</span>::<span class="ident">Sender</span><span class="op">&lt;</span>()<span class="op">&gt;</span>);
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> (<span class="ident">ping</span>, <span class="ident">ping_source</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">_source</span> <span class="op">=</span> <span class="ident">event_loop</span>
+                .<span class="ident">handle</span>()
+                .<span class="ident">insert_source</span>(<span class="ident">ping_source</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">ref_sender</span><span class="op">|</span> {
+                    <span class="ident">ref_sender</span>.<span class="number">0</span>.<span class="ident">send</span>(()).<span class="ident">unwrap</span>();
+                })
+                .<span class="ident">unwrap</span>();
+
+            <span class="ident">ping</span>.<span class="ident">ping</span>();
+
+            {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ref_sender</span> <span class="op">=</span> <span class="ident">RefSender</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>);
+                <span class="ident">event_loop</span>
+                    .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ref_sender</span>)
+                    .<span class="ident">unwrap</span>();
+            }
+        }
+
+        <span class="ident">receiver</span>.<span class="ident">recv</span>().<span class="ident">unwrap</span>();
+        <span class="comment">// sender still usable (e.g. for another EventLoop)</span>
+        <span class="ident">drop</span>(<span class="ident">sender</span>);
     }
 
     <span class="comment">// A dummy EventSource to test insertion and removal of sources</span>
