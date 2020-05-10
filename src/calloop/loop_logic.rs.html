@@ -809,8 +809,6 @@
 <span id="809">809</span>
 <span id="810">810</span>
 <span id="811">811</span>
-<span id="812">812</span>
-<span id="813">813</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
@@ -1566,6 +1564,7 @@
 
         {
             <span class="kw">struct</span> <span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">mpsc</span>::<span class="ident">Sender</span><span class="op">&lt;</span>()<span class="op">&gt;</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ref_sender</span> <span class="op">=</span> <span class="ident">RefSender</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>);
 
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> (<span class="ident">ping</span>, <span class="ident">ping_source</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
@@ -1578,12 +1577,9 @@
 
             <span class="ident">ping</span>.<span class="ident">ping</span>();
 
-            {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ref_sender</span> <span class="op">=</span> <span class="ident">RefSender</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>);
-                <span class="ident">event_loop</span>
-                    .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ref_sender</span>)
-                    .<span class="ident">unwrap</span>();
-            }
+            <span class="ident">event_loop</span>
+                .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ref_sender</span>)
+                .<span class="ident">unwrap</span>();
         }
 
         <span class="ident">receiver</span>.<span class="ident">recv</span>().<span class="ident">unwrap</span>();
