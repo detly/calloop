@@ -847,6 +847,9 @@
 <span id="847">847</span>
 <span id="848">848</span>
 <span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
@@ -1122,26 +1125,28 @@
         <span class="kw-2">mut</span> <span class="ident">timeout</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Duration</span><span class="op">&gt;</span>,
         <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="ident">events</span> <span class="op">=</span> <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Instant</span>::<span class="ident">now</span>();
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">poll</span>.<span class="ident">poll</span>(<span class="ident">timeout</span>);
+        <span class="kw">let</span> <span class="ident">events</span> <span class="op">=</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
+            <span class="kw">loop</span> {
+                <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Instant</span>::<span class="ident">now</span>();
+                <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">poll</span>.<span class="ident">poll</span>(<span class="ident">timeout</span>);
 
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">events</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span> <span class="ident">events</span>,
-                <span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Interrupted</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="comment">// Interrupted by a signal. Update timeout and retry.</span>
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">timeout</span> {
-                        <span class="kw">let</span> <span class="ident">elapsed</span> <span class="op">=</span> <span class="ident">now</span>.<span class="ident">elapsed</span>();
-                        <span class="kw">if</span> <span class="ident">elapsed</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">to</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-                        } <span class="kw">else</span> {
-                            <span class="ident">timeout</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">to</span> <span class="op">-</span> <span class="ident">elapsed</span>);
+                <span class="kw">match</span> <span class="ident">result</span> {
+                    <span class="prelude-val">Ok</span>(<span class="ident">events</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span> <span class="ident">events</span>,
+                    <span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Interrupted</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="comment">// Interrupted by a signal. Update timeout and retry.</span>
+                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">timeout</span> {
+                            <span class="kw">let</span> <span class="ident">elapsed</span> <span class="op">=</span> <span class="ident">now</span>.<span class="ident">elapsed</span>();
+                            <span class="kw">if</span> <span class="ident">elapsed</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">to</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+                            } <span class="kw">else</span> {
+                                <span class="ident">timeout</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">to</span> <span class="op">-</span> <span class="ident">elapsed</span>);
+                            }
                         }
                     }
-                }
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
-            };
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
+                };
+            }
         };
 
         <span class="kw">for</span> <span class="ident">event</span> <span class="kw">in</span> <span class="ident">events</span> {
@@ -1157,6 +1162,7 @@
 
                 <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">inner</span>.<span class="ident">sources</span>.<span class="ident">borrow</span>().<span class="ident">contains</span>(<span class="ident">event</span>.<span class="ident">token</span>) {
                     <span class="comment">// the source has been removed from within its callback, unregister it</span>
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">disp</span>.<span class="ident">unregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">poll</span>) {
                         <span class="ident">log</span>::<span class="macro">warn</span><span class="macro">!</span>(
                             <span class="string">&quot;[calloop] Failed to unregister source from the polling system: {:?}&quot;</span>,
