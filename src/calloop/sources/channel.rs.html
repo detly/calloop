@@ -281,6 +281,14 @@
 <span id="281">281</span>
 <span id="282">282</span>
 <span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! An MPSC channel whose receiving end is an event source</span>
 <span class="doccomment">//!</span>
@@ -330,8 +338,7 @@
     <span class="doccomment">/// This will wake the event loop and deliver an `Event::Msg` to</span>
     <span class="doccomment">/// it containing the provided value.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">mpsc</span>::<span class="ident">SendError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>();
-        <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">t</span>)
+        <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">t</span>).<span class="ident">map</span>(<span class="op">|</span>()<span class="op">|</span> <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>())
     }
 }
 
@@ -366,22 +373,31 @@
     <span class="doccomment">/// This will wake the event loop and deliver an `Event::Msg` to</span>
     <span class="doccomment">/// it containing the provided value. If the channel is full, this</span>
     <span class="doccomment">/// function will block until the event loop empties it and it can</span>
-    <span class="doccomment">/// deliver the message. Readiness is signalled to the event loop</span>
-    <span class="doccomment">/// *before* blocking.</span>
+    <span class="doccomment">/// deliver the message.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Due to the blocking behavior, this method should not be used on the</span>
+    <span class="doccomment">/// same thread as the one running the event loop, as it could cause deadlocks.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">mpsc</span>::<span class="ident">SendError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>();
-        <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">t</span>)
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">try_send</span>(<span class="ident">t</span>);
+        <span class="kw">match</span> <span class="ident">ret</span> {
+            <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+            <span class="prelude-val">Err</span>(<span class="ident">mpsc</span>::<span class="ident">TrySendError</span>::<span class="ident">Full</span>(<span class="ident">t</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">t</span>).<span class="ident">map</span>(<span class="op">|</span>()<span class="op">|</span> <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>()),
+            <span class="prelude-val">Err</span>(<span class="ident">mpsc</span>::<span class="ident">TrySendError</span>::<span class="ident">Disconnected</span>(<span class="ident">t</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">mpsc</span>::<span class="ident">SendError</span>(<span class="ident">t</span>)),
+        }
     }
 
     <span class="doccomment">/// Send a message to the synchronous channel</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will wake the event loop and deliver an `Event::Msg` to</span>
     <span class="doccomment">/// it containing the provided value. If the channel is full, this</span>
-    <span class="doccomment">/// function will return an error. The event loop will be signalled</span>
-    <span class="doccomment">/// for readinnes in all cases.</span>
+    <span class="doccomment">/// function will return an error, but the event loop will still be</span>
+    <span class="doccomment">/// signaled for readiness.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">t</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">mpsc</span>::<span class="ident">TrySendError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>();
-        <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">try_send</span>(<span class="ident">t</span>)
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">try_send</span>(<span class="ident">t</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(()) <span class="op">|</span> <span class="prelude-val">Err</span>(<span class="ident">mpsc</span>::<span class="ident">TrySendError</span>::<span class="ident">Full</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="ident">ret</span> {
+            <span class="self">self</span>.<span class="ident">ping</span>.<span class="ident">ping</span>();
+        }
+        <span class="ident">ret</span>
     }
 }
 
