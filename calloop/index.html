@@ -19,7 +19,7 @@ needing to know about each other.</p>
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="comment">// Create the event loop</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">calloop</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to initialize the event loop!&quot;</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">calloop</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to initialize the event loop!&quot;</span>);
     <span class="comment">// Retrieve an handle. It is used to insert new sources into the event loop</span>
     <span class="comment">// It can be cloned, allowing you to insert sources from within sources</span>
     <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
@@ -70,7 +70,8 @@ aggregate them.</p>
 </td></tr><tr class='module-item'><td><a class="mod" href="signals/index.html" title='calloop::signals mod'>signals</a></td><td class='docblock-short'><p>Event source for tracking Unix signals</p>
 </td></tr><tr class='module-item'><td><a class="mod" href="timer/index.html" title='calloop::timer mod'>timer</a></td><td class='docblock-short'><p>Timer-based event sources</p>
 </td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table><tr class='module-item'><td><a class="struct" href="struct.EventLoop.html" title='calloop::EventLoop struct'>EventLoop</a></td><td class='docblock-short'><p>An event loop</p>
+<table><tr class='module-item'><td><a class="struct" href="struct.Dispatcher.html" title='calloop::Dispatcher struct'>Dispatcher</a></td><td class='docblock-short'><p>An event source with its callback.</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.EventLoop.html" title='calloop::EventLoop struct'>EventLoop</a></td><td class='docblock-short'><p>An event loop</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Idle.html" title='calloop::Idle struct'>Idle</a></td><td class='docblock-short'><p>An idle callback that was inserted in this loop</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.InsertError.html" title='calloop::InsertError struct'>InsertError</a></td><td class='docblock-short'><p>An error generated when trying to insert an event source</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.LoopHandle.html" title='calloop::LoopHandle struct'>LoopHandle</a></td><td class='docblock-short'><p>An handle to an event loop</p>
@@ -78,8 +79,8 @@ aggregate them.</p>
 event loop</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Poll.html" title='calloop::Poll struct'>Poll</a></td><td class='docblock-short'><p>The polling system</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Readiness.html" title='calloop::Readiness struct'>Readiness</a></td><td class='docblock-short'><p>Readiness for a file descriptor notification</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Source.html" title='calloop::Source struct'>Source</a></td><td class='docblock-short'><p>A token representing an event source inserted in the event loop</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Token.html" title='calloop::Token struct'>Token</a></td><td class='docblock-short'><p>A Token for registration</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.RegistrationToken.html" title='calloop::RegistrationToken struct'>RegistrationToken</a></td><td class='docblock-short'><p>A Token for registration in the <code>EventLoop</code>.</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.Token.html" title='calloop::Token struct'>Token</a></td><td class='docblock-short'><p>A Token for registration of an <code>EventSource</code>.</p>
 </td></tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table><tr class='module-item'><td><a class="enum" href="enum.Interest.html" title='calloop::Interest enum'>Interest</a></td><td class='docblock-short'><p>Interest to register regarding the file descriptor</p>
 </td></tr><tr class='module-item'><td><a class="enum" href="enum.Mode.html" title='calloop::Mode enum'>Mode</a></td><td class='docblock-short'><p>Possible modes for registering a file descriptor</p>

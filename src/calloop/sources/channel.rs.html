@@ -430,7 +430,7 @@
     (<span class="ident">SyncSender</span> { <span class="ident">sender</span>, <span class="ident">ping</span> }, <span class="ident">Channel</span> { <span class="ident">receiver</span>, <span class="ident">source</span> })
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">EventSource</span> <span class="kw">for</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">EventSource</span> <span class="kw">for</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Metadata</span> <span class="op">=</span> ();
     <span class="kw">type</span> <span class="ident">Ret</span> <span class="op">=</span> ();
@@ -477,7 +477,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">basic_channel</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
 
@@ -486,7 +486,7 @@
         <span class="comment">// (got_msg, got_closed)</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">got</span> <span class="op">=</span> (<span class="bool-val">false</span>, <span class="bool-val">false</span>);
 
-        <span class="kw">let</span> <span class="ident">_source</span> <span class="op">=</span> <span class="ident">handle</span>
+        <span class="kw">let</span> <span class="ident">_channel_token</span> <span class="op">=</span> <span class="ident">handle</span>
             .<span class="ident">insert_source</span>(<span class="ident">rx</span>, <span class="kw">move</span> <span class="op">|</span><span class="ident">evt</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (), <span class="ident">got</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (<span class="ident">bool</span>, <span class="ident">bool</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">evt</span> {
                 <span class="ident">Event</span>::<span class="ident">Msg</span>(()) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">got</span>.<span class="number">0</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -524,7 +524,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">basic_sync_channel</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
 
@@ -532,7 +532,7 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">received</span> <span class="op">=</span> (<span class="number">0</span>, <span class="bool-val">false</span>);
 
-        <span class="kw">let</span> <span class="ident">_source</span> <span class="op">=</span> <span class="ident">handle</span>
+        <span class="kw">let</span> <span class="ident">_channel_token</span> <span class="op">=</span> <span class="ident">handle</span>
             .<span class="ident">insert_source</span>(
                 <span class="ident">rx</span>,
                 <span class="kw">move</span> <span class="op">|</span><span class="ident">evt</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (), <span class="ident">received</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (<span class="ident">u32</span>, <span class="ident">bool</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">evt</span> {

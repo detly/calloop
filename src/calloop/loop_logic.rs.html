@@ -850,6 +850,85 @@
 <span id="850">850</span>
 <span id="851">851</span>
 <span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
@@ -860,15 +939,24 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">list</span>::<span class="ident">SourceList</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sources</span>::{<span class="ident">EventSource</span>, <span class="ident">Idle</span>, <span class="ident">IdleDispatcher</span>, <span class="ident">Source</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sources</span>::{<span class="ident">Dispatcher</span>, <span class="ident">EventSource</span>, <span class="ident">Idle</span>, <span class="ident">IdleDispatcher</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Poll</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Token</span>;
 
-<span class="kw">type</span> <span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">IdleDispatcher</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">type</span> <span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;i</span>, <span class="ident">Data</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">IdleDispatcher</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;i</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-<span class="kw">struct</span> <span class="ident">LoopInner</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+<span class="doccomment">/// A Token for registration in the `EventLoop`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This token is given to you by the `EventLoop` when an `EventSource` is inserted or</span>
+<span class="doccomment">/// a `Dispatcher` is registered. You can use it to `disable`, `enable`, `update`,</span>
+<span class="doccomment">/// `remove` or `kill` the `EventSource` or `Dispatcher`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RegistrationToken</span>(<span class="ident">Token</span>);
+
+<span class="kw">struct</span> <span class="ident">LoopInner</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
     <span class="ident">poll</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Poll</span><span class="op">&gt;</span>,
-    <span class="ident">sources</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">SourceList</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">idles</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">sources</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">SourceList</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">idles</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// An handle to an event loop</span>
@@ -876,13 +964,13 @@
 <span class="doccomment">/// This handle allows you to insert new sources and idles in this event loop,</span>
 <span class="doccomment">/// it can be cloned, and it is possible to insert new sources from within a source</span>
 <span class="doccomment">/// callback.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">LoopInner</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
+    <span class="ident">inner</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">LoopInner</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">LoopHandle</span> {
             <span class="ident">inner</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">clone</span>(),
         }
@@ -925,51 +1013,84 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Insert an new event source in the loop</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Inserts a new event source in the loop.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The provided callback will be called during the dispatching cycles whenever the</span>
     <span class="doccomment">/// associated source generates events, see `EventLoop::dispatch(..)` for details.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_source</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="ident">S</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">InsertError</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function takes ownership of the event source. Use `register_dispatcher`</span>
+    <span class="doccomment">/// if you need access to the event source after this call.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_source</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="ident">S</span>,
+        <span class="ident">callback</span>: <span class="ident">F</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RegistrationToken</span>, <span class="ident">InsertError</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">S</span>::<span class="ident">Event</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>::<span class="ident">Metadata</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span>::<span class="ident">Ret</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;l</span>,
+        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">S</span>::<span class="ident">Event</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>::<span class="ident">Metadata</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span>::<span class="ident">Ret</span> <span class="op">+</span> <span class="lifetime">&#39;l</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sources</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">sources</span>.<span class="ident">borrow_mut</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
 
-        <span class="kw">let</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">Dispatcher</span>::<span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>::<span class="ident">new</span>(
-            <span class="ident">source</span>, <span class="ident">callback</span>,
-        )));
-        <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">add_source</span>(<span class="ident">dispatcher</span>);
-
+        <span class="kw">let</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Dispatcher</span>::<span class="ident">new</span>(<span class="ident">source</span>, <span class="ident">callback</span>);
+        <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">add_source</span>(<span class="ident">dispatcher</span>.<span class="ident">clone_as_event_dispatcher</span>());
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">sources</span>
             .<span class="ident">get_dispatcher</span>(<span class="ident">token</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">register</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">poll</span>, <span class="ident">token</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span> <span class="ident">ret</span> {
-            <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="ident">sources</span>
+            <span class="ident">sources</span>
                 .<span class="ident">del_source</span>(<span class="ident">token</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;Source was just inserted?!&quot;</span>)
-                .<span class="ident">into_source_any</span>()
-                .<span class="ident">downcast</span>::<span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">s</span>)
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Downcasting failed!&quot;</span>));
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InsertError</span> { <span class="ident">error</span>, <span class="ident">source</span> });
+                .<span class="ident">expect</span>(<span class="string">&quot;Source was just inserted?!&quot;</span>);
+
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InsertError</span> {
+                <span class="ident">error</span>,
+                <span class="ident">source</span>: <span class="ident">dispatcher</span>.<span class="ident">into_source_inner</span>(),
+            });
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Source</span> {
-            <span class="ident">token</span>,
-            <span class="ident">_type</span>: <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>,
-        })
+        <span class="prelude-val">Ok</span>(<span class="ident">RegistrationToken</span>(<span class="ident">token</span>))
     }
 
-    <span class="doccomment">/// Insert an idle callback</span>
+    <span class="doccomment">/// Registers a `Dispatcher` in the loop.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Use this function if you need access to the event source after its insertion in the loop.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also `insert_source`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">register_dispatcher</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">dispatcher</span>: <span class="ident">Dispatcher</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">F</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RegistrationToken</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;l</span>,
+        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">S</span>::<span class="ident">Event</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>::<span class="ident">Metadata</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span>::<span class="ident">Ret</span> <span class="op">+</span> <span class="lifetime">&#39;l</span>,
+    {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sources</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">sources</span>.<span class="ident">borrow_mut</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poll</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>();
+
+        <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">add_source</span>(<span class="ident">dispatcher</span>.<span class="ident">clone_as_event_dispatcher</span>());
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">sources</span>
+            .<span class="ident">get_dispatcher</span>(<span class="ident">token</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">register</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">poll</span>, <span class="ident">token</span>);
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span> <span class="ident">ret</span> {
+            <span class="ident">sources</span>
+                .<span class="ident">del_source</span>(<span class="ident">token</span>)
+                .<span class="ident">expect</span>(<span class="string">&quot;Source was just inserted?!&quot;</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>);
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="ident">RegistrationToken</span>(<span class="ident">token</span>))
+    }
+
+    <span class="doccomment">/// Inserts an idle callback.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This callback will be called during a dispatching cycle when the event loop has</span>
     <span class="doccomment">/// finished processing all pending events from the sources and becomes idle.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_idle</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Idle</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_idle</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span>) <span class="op">+</span> <span class="lifetime">&#39;l</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Idle</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opt_cb</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">callback</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="prelude-val">Some</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Data</span><span class="op">|</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cb</span>) <span class="op">=</span> <span class="ident">opt_cb</span>.<span class="ident">take</span>() {
@@ -980,124 +1101,95 @@
         <span class="ident">Idle</span> { <span class="ident">callback</span> }
     }
 
-    <span class="doccomment">/// Access this event source</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This allows you to modify the event source without removing it from the event</span>
-    <span class="doccomment">/// loop if it allows it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that replacing it with an other using `mem::replace` or equivalent would not</span>
-    <span class="doccomment">/// correctly update its registration and generate errors. Instead you should remove</span>
-    <span class="doccomment">/// the source using the `remove()` method and then insert a new one.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Note**: This cannot be done from within the callback of the same source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_source</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>, <span class="ident">T</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-        <span class="ident">f</span>: <span class="ident">F</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
-        <span class="kw">let</span> <span class="ident">disp</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">inner</span>
-            .<span class="ident">sources</span>
-            .<span class="ident">borrow</span>()
-            .<span class="ident">get_dispatcher</span>(<span class="ident">source</span>.<span class="ident">token</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;Attempting to access a non-existent source?!&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">source_any</span> <span class="op">=</span> <span class="ident">disp</span>.<span class="ident">as_source_any</span>();
-        <span class="kw">let</span> <span class="ident">source_mut</span> <span class="op">=</span> <span class="ident">source_any</span>.<span class="ident">downcast_mut</span>::<span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>().<span class="ident">expect</span>(<span class="string">&quot;Downcasting failed!&quot;</span>);
-        <span class="ident">f</span>(<span class="ident">source_mut</span>)
-    }
-
-    <span class="doccomment">/// Enable this previously disabled event source</span>
+    <span class="doccomment">/// Enables this previously disabled event source.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This previously disabled source will start generating events again.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Note**: This cannot be done from within the callback of the same source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EventSource</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="kw-2">&amp;</span><span class="ident">RegistrationToken</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">inner</span>
             .<span class="ident">sources</span>
             .<span class="ident">borrow</span>()
-            .<span class="ident">get_dispatcher</span>(<span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">get_dispatcher</span>(<span class="ident">token</span>.<span class="number">0</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Attempting to access a non-existent source?!&quot;</span>)
-            .<span class="ident">register</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>(), <span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">register</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>(), <span class="ident">token</span>.<span class="number">0</span>)
     }
 
-    <span class="doccomment">/// Make this source update its registration</span>
+    <span class="doccomment">/// Makes this source update its registration.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If after accessing the source you changed its parameters in a way that requires</span>
     <span class="doccomment">/// updating its registration.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Note**: This cannot be done from within the callback of the same source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EventSource</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="kw-2">&amp;</span><span class="ident">RegistrationToken</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">inner</span>
             .<span class="ident">sources</span>
             .<span class="ident">borrow</span>()
-            .<span class="ident">get_dispatcher</span>(<span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">get_dispatcher</span>(<span class="ident">token</span>.<span class="number">0</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Attempting to access a non-existent source?!&quot;</span>)
-            .<span class="ident">reregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>(), <span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">reregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>(), <span class="ident">token</span>.<span class="number">0</span>)
     }
 
-    <span class="doccomment">/// Disable this event source</span>
+    <span class="doccomment">/// Disables this event source.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The source remains in the event loop, but it&#39;ll no longer generate events</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Note**: This cannot be done from within the callback of the same source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EventSource</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="kw-2">&amp;</span><span class="ident">RegistrationToken</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">inner</span>
             .<span class="ident">sources</span>
             .<span class="ident">borrow</span>()
-            .<span class="ident">get_dispatcher</span>(<span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">get_dispatcher</span>(<span class="ident">token</span>.<span class="number">0</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Attempting to access a non-existent source?!&quot;</span>)
             .<span class="ident">unregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>())
     }
 
-    <span class="doccomment">/// Remove this source from the event loop</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// You are givent the `EventSource` back.</span>
+    <span class="doccomment">/// Removes this source from the event loop.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Note**: This cannot be done from within the callback of the same source.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="ident">Source</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="ident">RegistrationToken</span>) {
         <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">inner</span>
             .<span class="ident">sources</span>
             .<span class="ident">borrow_mut</span>()
-            .<span class="ident">del_source</span>(<span class="ident">source</span>.<span class="ident">token</span>)
+            .<span class="ident">del_source</span>(<span class="ident">token</span>.<span class="number">0</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;Attempting to remove a non-existent source?!&quot;</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">source</span>.<span class="ident">unregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>()) {
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">source</span>.<span class="ident">unregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">poll</span>.<span class="ident">borrow_mut</span>()) {
             <span class="ident">log</span>::<span class="macro">warn</span><span class="macro">!</span>(
                 <span class="string">&quot;[calloop] Failed to unregister source from the polling system: {:?}&quot;</span>,
                 <span class="ident">e</span>
             );
         }
-        <span class="ident">source</span>
-            .<span class="ident">into_source_any</span>()
-            .<span class="ident">downcast</span>::<span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">s</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Downcasting failed!&quot;</span>))
     }
 
-    <span class="doccomment">/// Remove this event source from the event loop and drop it</span>
+    <span class="doccomment">/// Removes this source from the event loop.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// The source is not given back to you but instead dropped</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Note**: This *can* be done from within the callback of the same source</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kill</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">EventSource</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="ident">Source</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">sources</span>.<span class="ident">borrow_mut</span>().<span class="ident">del_source</span>(<span class="ident">source</span>.<span class="ident">token</span>);
+    <span class="doccomment">/// **Note**: This can be done from within the callback of the same source.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kill</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="ident">RegistrationToken</span>) {
+        <span class="kw">let</span> <span class="ident">_source</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">inner</span>
+            .<span class="ident">sources</span>
+            .<span class="ident">borrow_mut</span>()
+            .<span class="ident">del_source</span>(<span class="ident">token</span>.<span class="number">0</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;Attempting to remove a non-existent source?!&quot;</span>);
     }
 }
 
 <span class="doccomment">/// An event loop</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This loop can host several event sources, that can be dynamically added or removed.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
-    <span class="ident">handle</span>: <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
+    <span class="ident">handle</span>: <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span>,
     <span class="ident">stop_signal</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AtomicBool</span><span class="op">&gt;</span>,
     <span class="ident">ping</span>: <span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">ping</span>::<span class="ident">Ping</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> <span class="ident">EventLoop</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a new event loop</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Fails if the initialization of the polling system failed.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EventLoop</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">poll</span> <span class="op">=</span> <span class="ident">Poll</span>::<span class="ident">new</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">LoopHandle</span> {
             <span class="ident">inner</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">LoopInner</span> {
@@ -1116,7 +1208,7 @@
     }
 
     <span class="doccomment">/// Retrieve a loop handle</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LoopHandle</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">Data</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">handle</span>.<span class="ident">clone</span>()
     }
 
@@ -1280,14 +1372,15 @@
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
     <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">generic</span>::<span class="ident">Generic</span>, <span class="ident">sources</span>::<span class="ident">ping</span>::<span class="kw-2">*</span>, <span class="ident">Interest</span>, <span class="ident">Mode</span>, <span class="ident">Poll</span>, <span class="ident">Readiness</span>, <span class="ident">Source</span>, <span class="ident">Token</span>,
+        <span class="ident">generic</span>::<span class="ident">Generic</span>, <span class="ident">ping</span>::<span class="kw-2">*</span>, <span class="ident">timer</span>::<span class="ident">Timer</span>, <span class="ident">Dispatcher</span>, <span class="ident">Interest</span>, <span class="ident">Mode</span>, <span class="ident">Poll</span>, <span class="ident">Readiness</span>,
+        <span class="ident">RegistrationToken</span>, <span class="ident">Token</span>,
     };
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">EventLoop</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">dispatch_idle</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
@@ -1304,11 +1397,12 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">cancel_idle</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-        <span class="kw">let</span> <span class="ident">idle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">insert_idle</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">d</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
+        <span class="kw">let</span> <span class="ident">idle</span> <span class="op">=</span> <span class="ident">handle</span>.<span class="ident">insert_idle</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">d</span><span class="op">|</span> {
             <span class="kw-2">*</span><span class="ident">d</span> <span class="op">=</span> <span class="bool-val">true</span>;
         });
 
@@ -1323,7 +1417,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">wakeup</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">signal</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">get_signal</span>();
 
@@ -1338,7 +1432,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">wakeup_stop</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">signal</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">get_signal</span>();
 
@@ -1354,34 +1448,34 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">insert_remove</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">source_1</span> <span class="op">=</span> <span class="ident">event_loop</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">dummy_token_1</span> <span class="op">=</span> <span class="ident">event_loop</span>
             .<span class="ident">handle</span>()
             .<span class="ident">insert_source</span>(<span class="ident">DummySource</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> {})
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">source_1</span>.<span class="ident">token</span>.<span class="ident">id</span>, <span class="number">1</span>); <span class="comment">// numer 0 is the internal ping</span>
-        <span class="kw">let</span> <span class="ident">source_2</span> <span class="op">=</span> <span class="ident">event_loop</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dummy_token_1</span>.<span class="number">0</span>.<span class="ident">id</span>, <span class="number">1</span>); <span class="comment">// numer 0 is the internal ping</span>
+        <span class="kw">let</span> <span class="ident">dummy_token_2</span> <span class="op">=</span> <span class="ident">event_loop</span>
             .<span class="ident">handle</span>()
             .<span class="ident">insert_source</span>(<span class="ident">DummySource</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> {})
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">source_2</span>.<span class="ident">token</span>.<span class="ident">id</span>, <span class="number">2</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dummy_token_2</span>.<span class="number">0</span>.<span class="ident">id</span>, <span class="number">2</span>);
         <span class="comment">// ensure token reuse on source removal</span>
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">remove</span>(<span class="ident">source_1</span>);
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">remove</span>(<span class="ident">dummy_token_1</span>);
 
         <span class="ident">event_loop</span>
             .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ())
             .<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">source_3</span> <span class="op">=</span> <span class="ident">event_loop</span>
+        <span class="kw">let</span> <span class="ident">dummy_token_3</span> <span class="op">=</span> <span class="ident">event_loop</span>
             .<span class="ident">handle</span>()
             .<span class="ident">insert_source</span>(<span class="ident">DummySource</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> {})
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">source_3</span>.<span class="ident">token</span>.<span class="ident">id</span>, <span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dummy_token_3</span>.<span class="number">0</span>.<span class="ident">id</span>, <span class="number">1</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">insert_bad_source</span>() {
-        <span class="kw">let</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">insert_source</span>(
             <span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">generic</span>::<span class="ident">Generic</span>::<span class="ident">from_fd</span>(<span class="number">42</span>, <span class="ident">Interest</span>::<span class="ident">Readable</span>, <span class="ident">Mode</span>::<span class="ident">Level</span>),
             <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> <span class="prelude-val">Ok</span>(()),
@@ -1391,10 +1485,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">disarm_rearm</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">ping</span>, <span class="ident">ping_source</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">ping_source</span> <span class="op">=</span> <span class="ident">event_loop</span>
+        <span class="kw">let</span> <span class="ident">ping_token</span> <span class="op">=</span> <span class="ident">event_loop</span>
             .<span class="ident">handle</span>()
             .<span class="ident">insert_source</span>(<span class="ident">ping_source</span>, <span class="op">|</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (), <span class="ident">dispatched</span><span class="op">|</span> {
                 <span class="kw-2">*</span><span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -1410,7 +1504,7 @@
 
         <span class="comment">// disable the source</span>
         <span class="ident">ping</span>.<span class="ident">ping</span>();
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_source</span>).<span class="ident">unwrap</span>();
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_token</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">event_loop</span>
             .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dispatched</span>)
@@ -1418,10 +1512,10 @@
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dispatched</span>, <span class="bool-val">false</span>);
 
         <span class="comment">// disabling it again is an error</span>
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_source</span>).<span class="ident">unwrap_err</span>();
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_token</span>).<span class="ident">unwrap_err</span>();
 
         <span class="comment">// reenable it, the previous ping now gets dispatched</span>
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">enable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_source</span>).<span class="ident">unwrap</span>();
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">enable</span>(<span class="kw-2">&amp;</span><span class="ident">ping_token</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="ident">event_loop</span>
             .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dispatched</span>)
@@ -1480,7 +1574,7 @@
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">ping1</span>, <span class="ident">source1</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">ping2</span>, <span class="ident">source2</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
@@ -1525,7 +1619,7 @@
     <span class="kw">fn</span> <span class="ident">change_interests</span>() {
         <span class="kw">use</span> <span class="ident">nix</span>::<span class="ident">sys</span>::<span class="ident">socket</span>::{<span class="ident">socketpair</span>, <span class="ident">AddressFamily</span>, <span class="ident">SockFlag</span>, <span class="ident">SockType</span>};
         <span class="kw">use</span> <span class="ident">nix</span>::<span class="ident">unistd</span>::{<span class="ident">read</span>, <span class="ident">write</span>};
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">sock1</span>, <span class="ident">sock2</span>) <span class="op">=</span> <span class="ident">socketpair</span>(
             <span class="ident">AddressFamily</span>::<span class="ident">Unix</span>,
@@ -1536,31 +1630,32 @@
         .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="ident">Generic</span>::<span class="ident">from_fd</span>(<span class="ident">sock1</span>, <span class="ident">Interest</span>::<span class="ident">Readable</span>, <span class="ident">Mode</span>::<span class="ident">Level</span>);
-
-        <span class="kw">let</span> <span class="ident">sock1</span> <span class="op">=</span> <span class="ident">event_loop</span>
-            .<span class="ident">handle</span>()
-            .<span class="ident">insert_source</span>(<span class="ident">source</span>, <span class="op">|</span><span class="kw">_</span>, <span class="ident">fd</span>, <span class="ident">dispatched</span><span class="op">|</span> {
-                <span class="kw-2">*</span><span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                <span class="comment">// read all contents available to drain the socket</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">32</span>];
-                <span class="kw">loop</span> {
-                    <span class="kw">match</span> <span class="ident">read</span>(<span class="ident">fd</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>) {
-                        <span class="prelude-val">Ok</span>(<span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>, <span class="comment">// closed pipe, we are now inert</span>
-                        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
-                        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">no_nix_err</span>(<span class="ident">e</span>);
-                            <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">WouldBlock</span> {
-                                <span class="kw">break</span>;
-                            <span class="comment">// nothing more to read</span>
-                            } <span class="kw">else</span> {
-                                <span class="comment">// propagate error</span>
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
-                            }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Dispatcher</span>::<span class="ident">new</span>(<span class="ident">source</span>, <span class="op">|</span><span class="kw">_</span>, <span class="ident">fd</span>, <span class="ident">dispatched</span><span class="op">|</span> {
+            <span class="kw-2">*</span><span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="comment">// read all contents available to drain the socket</span>
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">32</span>];
+            <span class="kw">loop</span> {
+                <span class="kw">match</span> <span class="ident">read</span>(<span class="ident">fd</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>) {
+                    <span class="prelude-val">Ok</span>(<span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>, <span class="comment">// closed pipe, we are now inert</span>
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">no_nix_err</span>(<span class="ident">e</span>);
+                        <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">WouldBlock</span> {
+                            <span class="kw">break</span>;
+                        <span class="comment">// nothing more to read</span>
+                        } <span class="kw">else</span> {
+                            <span class="comment">// propagate error</span>
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
                         }
                     }
                 }
-                <span class="prelude-val">Ok</span>(())
-            })
+            }
+            <span class="prelude-val">Ok</span>(())
+        });
+
+        <span class="kw">let</span> <span class="ident">sock_token_1</span> <span class="op">=</span> <span class="ident">event_loop</span>
+            .<span class="ident">handle</span>()
+            .<span class="ident">register_dispatcher</span>(<span class="ident">dispatcher</span>.<span class="ident">clone</span>())
             .<span class="ident">unwrap</span>();
 
         <span class="comment">// first dispatch, nothing is readable</span>
@@ -1586,10 +1681,8 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">dispatched</span>);
 
         <span class="comment">// change the interests for writability instead</span>
-        <span class="ident">event_loop</span>
-            .<span class="ident">handle</span>()
-            .<span class="ident">with_source</span>(<span class="kw-2">&amp;</span><span class="ident">sock1</span>, <span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">g</span>.<span class="ident">interest</span> <span class="op">=</span> <span class="ident">Interest</span>::<span class="ident">Writable</span>);
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">sock1</span>).<span class="ident">unwrap</span>();
+        <span class="ident">dispatcher</span>.<span class="ident">as_source_mut</span>().<span class="ident">interest</span> <span class="op">=</span> <span class="ident">Interest</span>::<span class="ident">Writable</span>;
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">sock_token_1</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// the socket is writable</span>
         <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -1599,10 +1692,8 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">dispatched</span>);
 
         <span class="comment">// change back to readable</span>
-        <span class="ident">event_loop</span>
-            .<span class="ident">handle</span>()
-            .<span class="ident">with_source</span>(<span class="kw-2">&amp;</span><span class="ident">sock1</span>, <span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">g</span>.<span class="ident">interest</span> <span class="op">=</span> <span class="ident">Interest</span>::<span class="ident">Readable</span>);
-        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">sock1</span>).<span class="ident">unwrap</span>();
+        <span class="ident">dispatcher</span>.<span class="ident">as_source_mut</span>().<span class="ident">interest</span> <span class="op">=</span> <span class="ident">Interest</span>::<span class="ident">Readable</span>;
+        <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">sock_token_1</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// the socket is not readable</span>
         <span class="ident">dispatched</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -1614,11 +1705,11 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">kill_source</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Source</span><span class="op">&lt;</span><span class="ident">PingSource</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RegistrationToken</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
         <span class="kw">let</span> (<span class="ident">ping</span>, <span class="ident">ping_source</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="ident">event_loop</span>
+        <span class="kw">let</span> <span class="ident">ping_token</span> <span class="op">=</span> <span class="ident">event_loop</span>
             .<span class="ident">handle</span>()
             .<span class="ident">insert_source</span>(<span class="ident">ping_source</span>, <span class="kw">move</span> <span class="op">|</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> (), <span class="ident">opt_src</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">src</span>) <span class="op">=</span> <span class="ident">opt_src</span>.<span class="ident">take</span>() {
@@ -1629,13 +1720,80 @@
 
         <span class="ident">ping</span>.<span class="ident">ping</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opt_src</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">source</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opt_src</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ping_token</span>);
 
         <span class="ident">event_loop</span>
             .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opt_src</span>)
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">opt_src</span>.<span class="ident">is_none</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">non_static_source</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flag</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+        {
+            <span class="kw">let</span> <span class="ident">timer</span> <span class="op">=</span> <span class="ident">Timer</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">timer</span>.<span class="ident">handle</span>();
+            <span class="ident">handle</span>.<span class="ident">add_timeout</span>(<span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">5</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">flag</span>);
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fired</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">_timer_token</span> <span class="op">=</span> <span class="ident">event_loop</span>
+                .<span class="ident">handle</span>()
+                .<span class="ident">insert_source</span>(<span class="ident">timer</span>, <span class="op">|</span><span class="ident">flag</span>, <span class="kw">_</span>, <span class="ident">fired</span><span class="op">|</span> {
+                    <span class="kw-2">*</span><span class="ident">flag</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                    <span class="kw-2">*</span><span class="ident">fired</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                })
+                .<span class="ident">unwrap</span>();
+
+            <span class="ident">event_loop</span>
+                .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">500</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fired</span>)
+                .<span class="ident">unwrap</span>();
+
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">fired</span>);
+        }
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">flag</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">non_static_dispatcher</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flag</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+        {
+            <span class="kw">let</span> <span class="ident">timer</span> <span class="op">=</span> <span class="ident">Timer</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">timer</span>
+                .<span class="ident">handle</span>()
+                .<span class="ident">add_timeout</span>(<span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">5</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">flag</span>);
+
+            <span class="kw">let</span> <span class="ident">dispatcher</span> <span class="op">=</span> <span class="ident">Dispatcher</span>::<span class="ident">new</span>(<span class="ident">timer</span>, <span class="op">|</span><span class="ident">flag</span>, <span class="kw">_</span>, <span class="ident">fired</span><span class="op">|</span> {
+                <span class="kw-2">*</span><span class="ident">flag</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="kw-2">*</span><span class="ident">fired</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            });
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fired</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">disp_token</span> <span class="op">=</span> <span class="ident">event_loop</span>
+                .<span class="ident">handle</span>()
+                .<span class="ident">register_dispatcher</span>(<span class="ident">dispatcher</span>.<span class="ident">clone</span>())
+                .<span class="ident">unwrap</span>();
+
+            <span class="ident">event_loop</span>
+                .<span class="ident">dispatch</span>(<span class="ident">Duration</span>::<span class="ident">from_millis</span>(<span class="number">500</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fired</span>)
+                .<span class="ident">unwrap</span>();
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">fired</span>);
+
+            <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">remove</span>(<span class="ident">disp_token</span>);
+
+            <span class="kw">let</span> <span class="ident">timer</span> <span class="op">=</span> <span class="ident">dispatcher</span>.<span class="ident">into_source_inner</span>();
+            <span class="ident">timer</span>.<span class="ident">handle</span>().<span class="ident">cancel_all_timeouts</span>();
+        }
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">flag</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1648,9 +1806,9 @@
             <span class="kw">struct</span> <span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">mpsc</span>::<span class="ident">Sender</span><span class="op">&lt;</span>()<span class="op">&gt;</span>);
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ref_sender</span> <span class="op">=</span> <span class="ident">RefSender</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>);
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span><span class="ident">RefSender</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> (<span class="ident">ping</span>, <span class="ident">ping_source</span>) <span class="op">=</span> <span class="ident">make_ping</span>().<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">_source</span> <span class="op">=</span> <span class="ident">event_loop</span>
+            <span class="kw">let</span> <span class="ident">_ping_token</span> <span class="op">=</span> <span class="ident">event_loop</span>
                 .<span class="ident">handle</span>()
                 .<span class="ident">insert_source</span>(<span class="ident">ping_source</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">ref_sender</span><span class="op">|</span> {
                     <span class="ident">ref_sender</span>.<span class="number">0</span>.<span class="ident">send</span>(()).<span class="ident">unwrap</span>();

@@ -591,7 +591,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">EventSource</span> <span class="kw">for</span> <span class="ident">Timer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">EventSource</span> <span class="kw">for</span> <span class="ident">Timer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">T</span>;
     <span class="kw">type</span> <span class="ident">Metadata</span> <span class="op">=</span> <span class="ident">TimerHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Ret</span> <span class="op">=</span> ();
@@ -849,7 +849,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">single_timer</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">evl_handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
 
@@ -881,7 +881,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">multi_timout_order</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">evl_handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
 
@@ -924,7 +924,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">timer_cancel</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">EventLoop</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">evl_handle</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>();
 

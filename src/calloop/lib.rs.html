@@ -122,7 +122,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
 <span class="doccomment">//!     // Create the event loop</span>
-<span class="doccomment">//!     let mut event_loop = calloop::EventLoop::new().expect(&quot;Failed to initialize the event loop!&quot;);</span>
+<span class="doccomment">//!     let mut event_loop = calloop::EventLoop::try_new().expect(&quot;Failed to initialize the event loop!&quot;);</span>
 <span class="doccomment">//!     // Retrieve an handle. It is used to insert new sources into the event loop</span>
 <span class="doccomment">//!     // It can be cloned, allowing you to insert sources from within sources</span>
 <span class="doccomment">//!     let handle = event_loop.handle();</span>
@@ -182,7 +182,7 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sys</span>::{<span class="ident">Interest</span>, <span class="ident">Mode</span>, <span class="ident">Poll</span>, <span class="ident">Readiness</span>, <span class="ident">Token</span>};
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">loop_logic</span>::{<span class="ident">EventLoop</span>, <span class="ident">InsertError</span>, <span class="ident">LoopHandle</span>, <span class="ident">LoopSignal</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">loop_logic</span>::{<span class="ident">EventLoop</span>, <span class="ident">InsertError</span>, <span class="ident">LoopHandle</span>, <span class="ident">LoopSignal</span>, <span class="ident">RegistrationToken</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">sources</span>::<span class="kw-2">*</span>;
 
 <span class="kw">mod</span> <span class="ident">list</span>;
