@@ -241,6 +241,7 @@
 <span id="240">240</span>
 <span id="241">241</span>
 <span id="242">242</span>
+<span id="243">243</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">cell</span>::{<span class="ident">Ref</span>, <span class="ident">RefCell</span>, <span class="ident">RefMut</span>},
@@ -264,7 +265,7 @@
 <span class="doccomment">/// This is the trait you need to implement if you wish to create your own</span>
 <span class="doccomment">/// calloop-compatible event sources.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The 3 type parameter define the type of closure the user will need to</span>
+<span class="doccomment">/// The 3 associated types define the type of closure the user will need to</span>
 <span class="doccomment">/// provide to process events for your event source.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The `process_events` method will be called when one of the FD you registered</span>
@@ -281,7 +282,7 @@
     <span class="doccomment">/// the user may need to interact with when processing events. The user callback</span>
     <span class="doccomment">/// will receive a `&amp;mut Metadata` reference.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Just set to `()` if not needed.</span>
+    <span class="doccomment">/// Set to `()` if not needed.</span>
     <span class="kw">type</span> <span class="ident">Metadata</span>;
     <span class="doccomment">/// The return type of the user callback</span>
     <span class="doccomment">///</span>
@@ -289,7 +290,7 @@
     <span class="doccomment">/// processing is finshed (to indicate success or failure for example), you can</span>
     <span class="doccomment">/// specify it using this type.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Just set to `()` if not needed.</span>
+    <span class="doccomment">/// Set to `()` if not needed.</span>
     <span class="kw">type</span> <span class="ident">Ret</span>;
 
     <span class="doccomment">/// Process any relevant events</span>
@@ -313,23 +314,24 @@
 
     <span class="doccomment">/// Register yourself to this poll instance</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// You should register all your relevant file descriptors to the provided `Poll`</span>
-    <span class="doccomment">/// using its `Poll::register` method.</span>
+    <span class="doccomment">/// You should register all your relevant file descriptors to the provided [`Poll`](crate::Poll)</span>
+    <span class="doccomment">/// using its [`Poll::register`](crate::Poll#method.register) method.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If you need to register more than one file descriptor, you can change the</span>
-    <span class="doccomment">/// `sub_id` field of the `Token` to differentiate between them.</span>
+    <span class="doccomment">/// `sub_id` field of the [`Token`](crate::Token) to differentiate between them.</span>
     <span class="kw">fn</span> <span class="ident">register</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">poll</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Poll</span>, <span class="ident">token</span>: <span class="ident">Token</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Re-register your file descriptors</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Your should update the registration of all your relevant file descriptor to</span>
-    <span class="doccomment">/// the provided `Poll` using its `Poll::reregister`, if necessary.</span>
+    <span class="doccomment">/// the provided [`Poll`](crate::Poll) using its [`Poll::reregister`](crate::Poll#method.reregister),</span>
+    <span class="doccomment">/// if necessary.</span>
     <span class="kw">fn</span> <span class="ident">reregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">poll</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Poll</span>, <span class="ident">token</span>: <span class="ident">Token</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Unregister your file descriptors</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// You should unregister all your file descriptors from this `Poll` using its</span>
-    <span class="doccomment">/// `Poll::unregister` method.</span>
+    <span class="doccomment">/// You should unregister all your file descriptors from this [`Poll`](crate::Poll) using its</span>
+    <span class="doccomment">/// [`Poll::unregister`](crate::Poll#method.unregister) method.</span>
     <span class="kw">fn</span> <span class="ident">unregister</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">poll</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Poll</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 

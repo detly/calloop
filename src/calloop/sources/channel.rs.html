@@ -290,13 +290,19 @@
 <span id="289">289</span>
 <span id="290">290</span>
 <span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! An MPSC channel whose receiving end is an event source</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Create a channel using `Channel::&lt;T&gt;::new()`, which returns a</span>
-<span class="doccomment">//! `Sender&lt;T&gt;` that can be cloned and sent accross threads if `T: Send`,</span>
-<span class="doccomment">//! and a `Channel&lt;T&gt;` that can be inserted into an `EventLoop`. It will generate</span>
-<span class="doccomment">//! one event per message.</span>
+<span class="doccomment">//! Create a channel using [`channel()`](channel), which returns a</span>
+<span class="doccomment">//! [`Sender`] that can be cloned and sent accross threads if `T: Send`,</span>
+<span class="doccomment">//! and a [`Channel`] that can be inserted into an [`EventLoop`](crate::EventLoop).</span>
+<span class="doccomment">//! It will generate one event per message.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! A synchronous version of the channel is provided by [`sync_channel`], in which</span>
+<span class="doccomment">//! the [`SyncSender`] will block when the channel is full.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">mpsc</span>;
 

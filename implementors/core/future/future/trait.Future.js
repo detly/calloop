@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["calloop"] = [{"text":"impl&lt;'s, 'l, F:&nbsp;AsRawFd&gt; Future for Readable&lt;'s, 'l, F&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'s, 'l, F:&nbsp;AsRawFd&gt; Future for Writable&lt;'s, 'l, F&gt;","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -180,6 +180,7 @@
 <span id="179">179</span>
 <span id="180">180</span>
 <span id="181">181</span>
+<span id="182">182</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! A futures executor as an event source</span>
 <span class="doccomment">//!</span>
@@ -198,7 +199,8 @@
 <span class="doccomment">//! (if any) by their own means.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **Note:** The futures must have their own means of being woken up, as this executor is,</span>
-<span class="doccomment">//! by itself, not I/O aware.</span>
+<span class="doccomment">//! by itself, not I/O aware. See [`LoopHandle::adapt_io`](crate::LoopHandle#method.adapt_io)</span>
+<span class="doccomment">//! for that, or you can use some other mechanism if you prefer.</span>
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future</span>::<span class="ident">Future</span>, <span class="ident">pin</span>::<span class="ident">Pin</span>, <span class="ident">sync</span>::<span class="ident">Arc</span>};
 
 <span class="kw">use</span> <span class="ident">futures_util</span>::{

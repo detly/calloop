@@ -164,21 +164,17 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Ping to the event loop</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This is an event source that just produces `()` events whevener</span>
-<span class="doccomment">//! the associated `Ping::ping()` method is called. If the event source</span>
-<span class="doccomment">//! is pinged multiple times between a single dispatching, it&#39;ll only generate</span>
-<span class="doccomment">//! one event.</span>
+<span class="doccomment">//! This is an event source that just produces `()` events whevener the associated</span>
+<span class="doccomment">//! [`Ping::ping`](Ping#method.ping) method is called. If the event source is pinged multiple times</span>
+<span class="doccomment">//! between a single dispatching, it&#39;ll only generate one event.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This event loop is a simple way of waking up the event loop from an</span>
-<span class="doccomment">//! other part of your program (and is what backs the `LoopSignal`). It can</span>
-<span class="doccomment">//! also be used as a building block to construct event sources whose source</span>
-<span class="doccomment">//! of event is not file descriptor, but rather an userspace source</span>
-<span class="doccomment">//! (like an other thread).</span>
+<span class="doccomment">//! This event loop is a simple way of waking up the event loop from an other part of your program</span>
+<span class="doccomment">//! (and is what backs the [`LoopSignal`](crate::LoopSignal)). It can also be used as a building</span>
+<span class="doccomment">//! block to construct event sources whose source of event is not file descriptor, but rather an</span>
+<span class="doccomment">//! userspace source (like an other thread).</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">os</span>::<span class="ident">unix</span>::<span class="ident">io</span>::<span class="ident">RawFd</span>, <span class="ident">sync</span>::<span class="ident">Arc</span>};
 

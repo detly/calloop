@@ -484,16 +484,14 @@
 <span id="483">483</span>
 <span id="484">484</span>
 <span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Timer-based event sources</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! A `Timer&lt;T&gt;` is a general time-tracking object. It is used by setting timeouts,</span>
+<span class="doccomment">//! A [`Timer&lt;T&gt;`](Timer) is a general time-tracking object. It is used by setting timeouts,</span>
 <span class="doccomment">//! and generates events whenever a timeout expires.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The `Timer&lt;T&gt;` event source provides an handle `TimerHandle&lt;T&gt;`, which is used</span>
-<span class="doccomment">//! to set or cancel timeouts. This handle is cloneable and can be send accross threads</span>
+<span class="doccomment">//! The [`Timer&lt;T&gt;`](Timer) event source provides an handle [`TimerHandle&lt;T&gt;`](TimerHandle), which</span>
+<span class="doccomment">//! is used to set or cancel timeouts. This handle is cloneable and can be sent accross threads</span>
 <span class="doccomment">//! if `T: Send`, allowing you to setup timeouts from any point of your program.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
@@ -519,9 +517,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Timer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create a new timer with default parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Default time resolution is 100ms</span>
+    <span class="doccomment">/// Create a new timer</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Timer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> (<span class="ident">scheduler</span>, <span class="ident">source</span>) <span class="op">=</span> <span class="ident">TimerScheduler</span>::<span class="ident">new</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">TimerInner</span>::<span class="ident">new</span>(<span class="ident">scheduler</span>);

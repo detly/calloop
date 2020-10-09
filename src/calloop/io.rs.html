@@ -354,7 +354,27 @@
 <span id="353">353</span>
 <span id="354">354</span>
 <span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! Adapters for async IO objects</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This module mainly hosts the [`Async`] adapter for making IO objects async with readiness</span>
+<span class="doccomment">//! monitoring backed by an [`EventLoop`](crate::EventLoop). See [`LoopHandle::adapt_io`] for</span>
+<span class="doccomment">//! how to create them.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [`LoopHandle::adapt_io`]: crate::LoopHandle#method.adapt_io</span>
+
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">unix</span>::<span class="ident">io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">RawFd</span>};
@@ -378,6 +398,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// If the `futures-io` cargo feature is enabled, it also implements `AsyncRead` and/or</span>
 <span class="doccomment">/// `AsyncWrite` if the underlying type implements `Read` and/or `Write`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that this adapter and the futures procuded from it and *not* threadsafe.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="ident">fd</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>,
     <span class="ident">dispatcher</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">IoDispatcher</span><span class="op">&gt;&gt;</span>,
@@ -427,12 +449,12 @@
         <span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>()
     }
 
-    <span class="doccomment">/// A future that terminates once the object becomes ready for read</span>
+    <span class="doccomment">/// A future that resolves once the object becomes ready for reading</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">readable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Readable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span> {
         <span class="ident">Readable</span> { <span class="ident">io</span>: <span class="self">self</span> }
     }
 
-    <span class="doccomment">/// A future that terminates once the object becomes ready for write</span>
+    <span class="doccomment">/// A future that resolves once the object becomes ready for writing</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">writable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Writable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span> {
         <span class="ident">Writable</span> { <span class="ident">io</span>: <span class="self">self</span> }
     }
@@ -456,6 +478,7 @@
     }
 }
 
+<span class="doccomment">/// A future that resolves once the associated object becomes ready for reading</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Readable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="ident">io</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span>,
 }
@@ -474,6 +497,7 @@
     }
 }
 
+<span class="doccomment">/// A future that resolves once the associated object becomes ready for writing</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Writable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="ident">io</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span>,
 }

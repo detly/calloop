@@ -100,40 +100,75 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Calloop, a Callback-based Event Loop</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This crate provides an `EventLoop` type, which is a small abstraction</span>
+<span class="doccomment">//! This crate provides an [`EventLoop`] type, which is a small abstraction</span>
 <span class="doccomment">//! over a polling system. The main difference between this crate</span>
 <span class="doccomment">//! and other traditional rust event loops is that it is based on callbacks:</span>
 <span class="doccomment">//! you can register several event sources, each being associated with a callback</span>
 <span class="doccomment">//! closure that will be invoked whenever the associated event source generates</span>
 <span class="doccomment">//! events.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This crate was initially an implementation detail of `wayland-server`, and has been</span>
-<span class="doccomment">//! split-off for reuse. I expect it to be more useful for GUI programs or graphical</span>
-<span class="doccomment">//! servers (like wayland-based apps) than performance critial networking code, which are</span>
-<span class="doccomment">//! more versed towards `tokio` and async-await. It mostly shines in the conception of</span>
-<span class="doccomment">//! modular infrastructures, allowing different modules to use the same event loop without</span>
-<span class="doccomment">//! needing to know about each other.</span>
+<span class="doccomment">//! The main target use of this event loop is thus for apps that expect to spend</span>
+<span class="doccomment">//! most of their time waiting for events and wishes to do so in a cheap and convenient</span>
+<span class="doccomment">//! way. It is not meant for large scale high performance IO.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## How to use it</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! extern crate calloop;</span>
 <span class="doccomment">//!</span>
+<span class="doccomment">//! use calloop::{generic::Generic, EventLoop, Interest, Mode};</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//! use std::time::Duration;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
 <span class="doccomment">//!     // Create the event loop</span>
-<span class="doccomment">//!     let mut event_loop = calloop::EventLoop::try_new().expect(&quot;Failed to initialize the event loop!&quot;);</span>
+<span class="doccomment">//!     let mut event_loop = EventLoop::try_new()</span>
+<span class="doccomment">//!                 .expect(&quot;Failed to initialize the event loop!&quot;);</span>
 <span class="doccomment">//!     // Retrieve an handle. It is used to insert new sources into the event loop</span>
-<span class="doccomment">//!     // It can be cloned, allowing you to insert sources from within sources</span>
+<span class="doccomment">//!     // It can be cloned, allowing you to insert sources from within source callbacks</span>
 <span class="doccomment">//!     let handle = event_loop.handle();</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//!     /*</span>
-<span class="doccomment">//!      * Setup your program, inserting event sources in the loop</span>
-<span class="doccomment">//!      */</span>
+<span class="doccomment">//!     // Inserting an event source takes this general form</span>
+<span class="doccomment">//!     // it can also be done from within the callback of an other event source</span>
+<span class="doccomment">//! #   let (_ping, source) = calloop::ping::make_ping().unwrap();</span>
+<span class="doccomment">//!     handle.insert_source(</span>
+<span class="doccomment">//!         // a type implementing the EventSource trait</span>
+<span class="doccomment">//!         source,</span>
+<span class="doccomment">//!         // a callback that is invoked whenever this source generates an event</span>
+<span class="doccomment">//!         |event, metadata, shared_data| {</span>
+<span class="doccomment">//!             // This callback is given 3 values:</span>
+<span class="doccomment">//!             // - the event generated by the source</span>
+<span class="doccomment">//!             // - &amp;mut access to some metadata, specific to the event source</span>
+<span class="doccomment">//!             // - &amp;mut access to the global shared data that was passed to EventLoop::dispatch</span>
+<span class="doccomment">//!         }</span>
+<span class="doccomment">//!     );</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     // Actual run of your loop</span>
 <span class="doccomment">//!     loop {</span>
@@ -161,24 +196,39 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This crate also provide some adapters for common event sources such as:</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! - MPSC channels</span>
-<span class="doccomment">//! - Timers</span>
-<span class="doccomment">//! - unix signals</span>
+<span class="doccomment">//! - [MPSC channels](channel)</span>
+<span class="doccomment">//! - [Timers](timer)</span>
+<span class="doccomment">//! - [unix signals](signals) on Linux</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! As well as generic objects backed by file descriptors.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! It is also possible to insert &quot;idle&quot; callbacks. These callbacks represent computations that</span>
 <span class="doccomment">//! need to be done at some point, but are not as urgent as processing the events. These callbacks</span>
-<span class="doccomment">//! are stored and then executed during `EventLoop::dispatch(..)`, once all events from the sources</span>
-<span class="doccomment">//! have been processed.</span>
+<span class="doccomment">//! are stored and then executed during [`EventLoop::dispatch`](EventLoop#method.dispatch), once all</span>
+<span class="doccomment">//! events from the sources have been processed.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Async/Await compatibility</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! `calloop` can be used with futures, both as an executor and for monitoring Async IO.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Activating the `executor` cargo feature will add the [`futures`] module, which provides</span>
+<span class="doccomment">//! a future executor that can be inserted into an [`EventLoop`] as yet another [`EventSource`].</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! IO objects can be made Async-aware via the [`LoopHandle::adapt_io`](LoopHandle#method.adapt_io)</span>
+<span class="doccomment">//! method. Waking up the futures using these objects is handled by the associated [`EventLoop`]</span>
+<span class="doccomment">//! directly.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Custom event sources</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! You can create custom event sources can will be inserted in the event loop by</span>
-<span class="doccomment">//! implementing the `EventSource` trait. This can be done either directly from the file</span>
+<span class="doccomment">//! implementing the [`EventSource`] trait. This can be done either directly from the file</span>
 <span class="doccomment">//! descriptors of your source of interest, or by wrapping an other event source and further</span>
-<span class="doccomment">//! processing its events. An `EventSource` can register more than one file descriptor and</span>
+<span class="doccomment">//! processing its events. An [`EventSource`] can register more than one file descriptor and</span>
 <span class="doccomment">//! aggregate them.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Platforms support</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Currently, only Linux and the *BSD are supported.</span>
 
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 
@@ -189,12 +239,10 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">loop_logic</span>::{<span class="ident">EventLoop</span>, <span class="ident">InsertError</span>, <span class="ident">LoopHandle</span>, <span class="ident">LoopSignal</span>, <span class="ident">RegistrationToken</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">sources</span>::<span class="kw-2">*</span>;
 
-<span class="kw">mod</span> <span class="ident">io</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">io</span>;
 <span class="kw">mod</span> <span class="ident">list</span>;
 <span class="kw">mod</span> <span class="ident">loop_logic</span>;
 <span class="kw">mod</span> <span class="ident">sources</span>;
-
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">io</span>::<span class="ident">Async</span>;
 
 <span class="kw">fn</span> <span class="ident">no_nix_err</span>(<span class="ident">err</span>: <span class="ident">nix</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span> {
     <span class="kw">match</span> <span class="ident">err</span> {

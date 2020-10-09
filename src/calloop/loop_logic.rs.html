@@ -952,6 +952,7 @@
 <span id="951">951</span>
 <span id="952">952</span>
 <span id="953">953</span>
+<span id="954">954</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
@@ -969,11 +970,12 @@
 
 <span class="kw">type</span> <span class="ident">IdleCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;i</span>, <span class="ident">Data</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">IdleDispatcher</span><span class="op">&lt;</span><span class="ident">Data</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;i</span><span class="op">&gt;&gt;</span>;
 
-<span class="doccomment">/// A Token for registration in the `EventLoop`.</span>
+<span class="doccomment">/// A token representing a registration in the [`EventLoop`].</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This token is given to you by the `EventLoop` when an `EventSource` is inserted or</span>
-<span class="doccomment">/// a `Dispatcher` is registered. You can use it to `disable`, `enable`, `update`,</span>
-<span class="doccomment">/// `remove` or `kill` the `EventSource` or `Dispatcher`.</span>
+<span class="doccomment">/// This token is given to you by the [`EventLoop`] when an [`EventSource`] is inserted or</span>
+<span class="doccomment">/// a [`Dispatcher`] is registered. You can use it to [disable](LoopHandle#method.disable),</span>
+<span class="doccomment">/// [enable](LoopHandle#method.enable), [update`](LoopHandle#method.update),</span>
+<span class="doccomment">/// [remove](LoopHandle#method.remove) or [kill](LoopHandle#method.kill) it.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RegistrationToken</span>(<span class="ident">Token</span>);
 
@@ -1206,8 +1208,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The produced futures can be polled in any executor, and notably the one provided by</span>
     <span class="doccomment">/// calloop.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">adapt_io</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fd</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span>::<span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;&gt;</span> {
-        <span class="kw">crate</span>::<span class="ident">Async</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">clone</span>(), <span class="ident">fd</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">adapt_io</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fd</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span>::<span class="ident">io</span>::<span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">crate</span>::<span class="ident">io</span>::<span class="ident">Async</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">clone</span>(), <span class="ident">fd</span>)
     }
 }
 
@@ -1317,7 +1319,7 @@
 
     <span class="doccomment">/// Dispatch pending events to their callbacks</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Some source have events available, their callbacks will be immediatly called.</span>
+    <span class="doccomment">/// If some sources have events available, their callbacks will be immediatly called.</span>
     <span class="doccomment">/// Otherwise this will wait until an event is receive or the provided `timeout`</span>
     <span class="doccomment">/// is reached. If `timeout` is `None`, it will wait without a duration limit.</span>
     <span class="doccomment">///</span>
