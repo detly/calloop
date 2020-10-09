@@ -1,6 +1,8 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `calloop` crate."><meta name="keywords" content="rust, rustlang, rust-lang, calloop"><title>calloop - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="../favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../calloop/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><p class='location'>Crate calloop</p><div class='block version'><p>Version 0.6.5</p></div><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all calloop's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'calloop', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `calloop` crate."><meta name="keywords" content="rust, rustlang, rust-lang, calloop"><title>calloop - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../calloop/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><p class='location'>Crate calloop</p><div class='block version'><p>Version 0.6.5</p></div><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all calloop's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'calloop', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/calloop/lib.rs.html#1-125' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>calloop</a></span></h1><div class='docblock'><p>Calloop, a Callback-based Event Loop</p>
-<p>This crate provides an [<code>EventLoop</code>] type, which is a small abstraction
+<p>This crate provides an <a href="../calloop/struct.EventLoop.html" title="EventLoop"><code>EventLoop</code></a> type, which is a small abstraction
 over a polling system. The main difference between this crate
 and other traditional rust event loops is that it is based on callbacks:
 you can register several event sources, each being associated with a callback
@@ -59,27 +61,27 @@ way. It is not meant for large scale high performance IO.</p>
 <p>The event loop is backed by an OS provided polling selector (epoll on Linux).</p>
 <p>This crate also provide some adapters for common event sources such as:</p>
 <ul>
-<li><a href="channel">MPSC channels</a></li>
-<li><a href="timer">Timers</a></li>
-<li><a href="signals">unix signals</a> on Linux</li>
+<li><a href="../calloop/channel/index.html">MPSC channels</a></li>
+<li><a href="../calloop/timer/index.html">Timers</a></li>
+<li><a href="../calloop/signals/index.html">unix signals</a> on Linux</li>
 </ul>
 <p>As well as generic objects backed by file descriptors.</p>
 <p>It is also possible to insert &quot;idle&quot; callbacks. These callbacks represent computations that
 need to be done at some point, but are not as urgent as processing the events. These callbacks
-are stored and then executed during <a href="EventLoop#method.dispatch"><code>EventLoop::dispatch</code></a>, once all
+are stored and then executed during <a href="../calloop/struct.EventLoop.html#method.dispatch"><code>EventLoop::dispatch</code></a>, once all
 events from the sources have been processed.</p>
 <h2 id="asyncawait-compatibility" class="section-header"><a href="#asyncawait-compatibility">Async/Await compatibility</a></h2>
 <p><code>calloop</code> can be used with futures, both as an executor and for monitoring Async IO.</p>
-<p>Activating the <code>executor</code> cargo feature will add the [<code>futures</code>] module, which provides
-a future executor that can be inserted into an [<code>EventLoop</code>] as yet another [<code>EventSource</code>].</p>
-<p>IO objects can be made Async-aware via the <a href="LoopHandle#method.adapt_io"><code>LoopHandle::adapt_io</code></a>
-method. Waking up the futures using these objects is handled by the associated [<code>EventLoop</code>]
+<p>Activating the <code>executor</code> cargo feature will add the <a href="../calloop/futures/index.html" title="futures"><code>futures</code></a> module, which provides
+a future executor that can be inserted into an <a href="../calloop/struct.EventLoop.html" title="EventLoop"><code>EventLoop</code></a> as yet another <a href="../calloop/trait.EventSource.html" title="EventSource"><code>EventSource</code></a>.</p>
+<p>IO objects can be made Async-aware via the <a href="../calloop/struct.LoopHandle.html#method.adapt_io"><code>LoopHandle::adapt_io</code></a>
+method. Waking up the futures using these objects is handled by the associated <a href="../calloop/struct.EventLoop.html" title="EventLoop"><code>EventLoop</code></a>
 directly.</p>
 <h2 id="custom-event-sources" class="section-header"><a href="#custom-event-sources">Custom event sources</a></h2>
 <p>You can create custom event sources can will be inserted in the event loop by
-implementing the [<code>EventSource</code>] trait. This can be done either directly from the file
+implementing the <a href="../calloop/trait.EventSource.html" title="EventSource"><code>EventSource</code></a> trait. This can be done either directly from the file
 descriptors of your source of interest, or by wrapping an other event source and further
-processing its events. An [<code>EventSource</code>] can register more than one file descriptor and
+processing its events. An <a href="../calloop/trait.EventSource.html" title="EventSource"><code>EventSource</code></a> can register more than one file descriptor and
 aggregate them.</p>
 <h2 id="platforms-support" class="section-header"><a href="#platforms-support">Platforms support</a></h2>
 <p>Currently, only Linux and the *BSD are supported.</p>
@@ -102,8 +104,8 @@ aggregate them.</p>
 event loop</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Poll.html" title='calloop::Poll struct'>Poll</a></td><td class='docblock-short'><p>The polling system</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.Readiness.html" title='calloop::Readiness struct'>Readiness</a></td><td class='docblock-short'><p>Readiness for a file descriptor notification</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.RegistrationToken.html" title='calloop::RegistrationToken struct'>RegistrationToken</a></td><td class='docblock-short'><p>A token representing a registration in the [<code>EventLoop</code>].</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Token.html" title='calloop::Token struct'>Token</a></td><td class='docblock-short'><p>A token (for implementation of the <a href="crate::EventSource"><code>EventSource</code></a> trait)</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.RegistrationToken.html" title='calloop::RegistrationToken struct'>RegistrationToken</a></td><td class='docblock-short'><p>A token representing a registration in the <a href="../calloop/struct.EventLoop.html" title="EventLoop"><code>EventLoop</code></a>.</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.Token.html" title='calloop::Token struct'>Token</a></td><td class='docblock-short'><p>A token (for implementation of the <a href="../calloop/trait.EventSource.html"><code>EventSource</code></a> trait)</p>
 </td></tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table><tr class='module-item'><td><a class="enum" href="enum.Mode.html" title='calloop::Mode enum'>Mode</a></td><td class='docblock-short'><p>Possible modes for registering a file descriptor</p>
 </td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
