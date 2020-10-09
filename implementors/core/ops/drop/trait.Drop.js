@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["calloop"] = [{"text":"impl&lt;T&gt; Drop for Sender&lt;T&gt;","synthetic":false,"types":[]},{"text":"impl Drop for PingSource","synthetic":false,"types":[]},{"text":"impl Drop for Signals","synthetic":false,"types":[]}];
+implementors["calloop"] = [{"text":"impl&lt;'l, F:&nbsp;AsRawFd&gt; Drop for Async&lt;'l, F&gt;","synthetic":false,"types":[]},{"text":"impl&lt;T&gt; Drop for Sender&lt;T&gt;","synthetic":false,"types":[]},{"text":"impl Drop for PingSource","synthetic":false,"types":[]},{"text":"impl Drop for Signals","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

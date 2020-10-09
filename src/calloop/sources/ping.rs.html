@@ -193,7 +193,7 @@
 <span class="doccomment">/// Create a new ping event source</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// you are given a `Ping` instance, which can be cloned and used to ping the</span>
-<span class="doccomment">/// event loop, and a `PingSource`, which you can isnert in your event loop to</span>
+<span class="doccomment">/// event loop, and a `PingSource`, which you can insert in your event loop to</span>
 <span class="doccomment">/// receive the pings.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">make_ping</span>() <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Ping</span>, <span class="ident">PingSource</span>)<span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">read</span>, <span class="ident">write</span>) <span class="op">=</span> <span class="ident">pipe2</span>(<span class="ident">OFlag</span>::<span class="ident">O_CLOEXEC</span> <span class="op">|</span> <span class="ident">OFlag</span>::<span class="ident">O_NONBLOCK</span>).<span class="ident">map_err</span>(<span class="ident">no_nix_err</span>)<span class="question-mark">?</span>;
