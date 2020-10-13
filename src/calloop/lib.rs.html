@@ -122,10 +122,6 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Calloop, a Callback-based Event Loop</span>
 <span class="doccomment">//!</span>
@@ -173,22 +169,18 @@
 <span class="doccomment">//!     );</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     // Actual run of your loop</span>
-<span class="doccomment">//!     loop {</span>
-<span class="doccomment">//!         // Dispatch received events to their callbacks, waiting at most 20 ms for</span>
-<span class="doccomment">//!         // new events</span>
-<span class="doccomment">//!         //</span>
-<span class="doccomment">//!         // The `&amp;mut shared_data` is a mutable reference that will be forwarded to all</span>
-<span class="doccomment">//!         // your callbacks, allowing them to easily share some state</span>
-<span class="doccomment">//! #       let mut shared_data = ();</span>
-<span class="doccomment">//!         event_loop.dispatch(Duration::from_millis(20), &amp;mut shared_data);</span>
-<span class="doccomment">//!</span>
+<span class="doccomment">//!     //</span>
+<span class="doccomment">//!     // Dispatch received events to their callbacks, waiting at most 20 ms for</span>
+<span class="doccomment">//!     // new events between each invocation of the provided callback.</span>
+<span class="doccomment">//!     //</span>
+<span class="doccomment">//!     // The `&amp;mut shared_data` is a mutable reference that will be forwarded to all</span>
+<span class="doccomment">//!     // your callbacks, allowing them to share some state</span>
+<span class="doccomment">//!     event_loop.run(Duration::from_millis(20), &amp;mut shared_data, |shared_data| {</span>
 <span class="doccomment">//!         /*</span>
-<span class="doccomment">//!          * Insert here the processing you need to do do between each event loop run</span>
-<span class="doccomment">//!          * like your drawing logic if you&#39;re doing a GUI app for example.</span>
-<span class="doccomment">//!          */</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #        break;</span>
-<span class="doccomment">//!     }</span>
+<span class="doccomment">//!         * Insert here the processing you need to do do between each waiting session</span>
+<span class="doccomment">//!         * like your drawing logic if you&#39;re doing a GUI app for example.</span>
+<span class="doccomment">//!         */</span>
+<span class="doccomment">//!     });</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
