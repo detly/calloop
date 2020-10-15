@@ -258,7 +258,7 @@
 <span class="doccomment">//! # let mut event_loop = calloop::EventLoop::&lt;()&gt;::try_new()</span>
 <span class="doccomment">//! #                .expect(&quot;Failed to initialize the event loop!&quot;);</span>
 <span class="doccomment">//! # let handle = event_loop.handle();</span>
-<span class="doccomment">//! # let io_object = std::net::UdpSocket::bind(&quot;127.0.0.1:34254&quot;).unwrap();</span>
+<span class="doccomment">//! # let io_object = calloop::generic::Fd(0);</span>
 <span class="doccomment">//! handle.insert_source(</span>
 <span class="doccomment">//!     // wrap your IO object in a Generic, here we register for read readiness</span>
 <span class="doccomment">//!     // in level-triggering mode</span>
