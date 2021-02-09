@@ -251,6 +251,7 @@
 <span id="248">248</span>
 <span id="249">249</span>
 <span id="250">250</span>
+<span id="251">251</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io</span>, <span class="ident">os</span>::<span class="ident">unix</span>::<span class="ident">io</span>::<span class="ident">RawFd</span>};
 
@@ -351,6 +352,7 @@
     };
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PollEvent</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">readiness</span>: <span class="ident">Readiness</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">token</span>: <span class="ident">Token</span>,
