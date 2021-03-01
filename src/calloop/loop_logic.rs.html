@@ -1518,7 +1518,7 @@
     <span class="kw">fn</span> <span class="ident">insert_bad_source</span>() {
         <span class="kw">let</span> <span class="ident">event_loop</span> <span class="op">=</span> <span class="ident">EventLoop</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span>::<span class="ident">try_new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">event_loop</span>.<span class="ident">handle</span>().<span class="ident">insert_source</span>(
-            <span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">generic</span>::<span class="ident">Generic</span>::<span class="ident">from_fd</span>(<span class="number">42</span>, <span class="ident">Interest</span>::<span class="ident">READ</span>, <span class="ident">Mode</span>::<span class="ident">Level</span>),
+            <span class="kw">crate</span>::<span class="ident">sources</span>::<span class="ident">generic</span>::<span class="ident">Generic</span>::<span class="ident">from_fd</span>(<span class="number">420</span>, <span class="ident">Interest</span>::<span class="ident">READ</span>, <span class="ident">Mode</span>::<span class="ident">Level</span>),
             <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> <span class="prelude-val">Ok</span>(()),
         );
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ret</span>.<span class="ident">is_err</span>());
