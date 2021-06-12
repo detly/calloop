@@ -191,16 +191,15 @@
 </ul>
 <p>This chapter covers what the first thing means, and how Calloop accomplishes the second thing.</p>
 <h2 id="terminology"><a class="header" href="#terminology">Terminology</a></h2>
-<p>A <em>blocking</em> operation is not just something that can take a long time — it's anything that could take an <em>indefinite</em> amount of time. If you're reading data over the network, for example, you might have no idea how long you'll be waiting to receive the next packet. A millisecond? A second? An hour? Forever?</p>
+<p>A <em>blocking</em> operation is one that waits for an event to happen, and doesn't use the CPU while it's waiting. For example, if you try to read from a network socket, and there is no data available, the read operation could wait for some indefinite amount of time. Your program will be in a state where it does not need to use any CPU cycles, but it won't proceed until there is data to read.</p>
 <p>Examples of blocking operations are:</p>
 <ul>
-<li>timers</li>
+<li>waiting for a certain time to elapse</li>
 <li>reading or writing to a file</li>
 <li>reading or writing to a network socket</li>
-<li>running other asynchronous code</li>
 <li>waiting for a thread to finish</li>
 </ul>
-<p>When any of these operations are ready to go, we call it an <em>event</em>. We call the underlying things (files, network sockets, etc.) <em>sources</em> for events. So, for example, you can create an event source that corresponds to a file, and it will generate events when it is ready for reading, or writing, or encounters an error.</p>
+<p>When any of these operations are ready to go, we call it an <em>event</em>. We call the underlying things (files, network sockets, timers, etc.) <em>sources</em> for events. So, for example, you can create an event source that corresponds to a file, and it will generate events when it is ready for reading, or writing, or encounters an error.</p>
 <h2 id="events-and-callbacks"><a class="header" href="#events-and-callbacks">Events and callbacks</a></h2>
 <p>An event loop like Calloop, as the name suggests, runs in a loop.  At the start of the loop, Calloop checks all the sources you've added to see if any events have happened for those sources. If they have, Calloop will call a function that you provide (known as a <em>callback</em>).</p>
 <p>This function will (possibly) be given some data for the event itself (eg. the bytes received), some state for the event source (eg. the socket, or a type that wraps it in a neater API), and some state for the whole program.</p>
