@@ -171,7 +171,7 @@
                     <main>
                         <h1 id="a-full-example-zeromq"><a class="header" href="#a-full-example-zeromq">A full example: ZeroMQ</a></h1>
 <p>The previous chapter showed how to use callbacks, event data and shared data to control our program. However, more complex programs will require more complex shared data, and more complex interactions between events. Eventually this will run up against ownership issues and just the basic mental load of the poor programmer.</p>
-<p>In this chapter we're going to create a more complex program: one based on <a href="https://zeromq.org/">ZeroMQ sockets</a>.</p>
+<p>In this chapter we're going to build something more complex: an event source based on <a href="https://zeromq.org/">ZeroMQ sockets</a>.</p>
 <p>ZeroMQ is (very) basically a highly abstracted socket library. You can create ZeroMQ sockets over TCP, PGM, IPC, in-process and more, and generally not worry about the transport mechanics. It guarantees atomic message transfer, and handles queuing, retries, reconnection and balancing under the hood. It <strong>also</strong> lets you integrate it with event loops and reactors by exposing a file descriptor that you can wait on.</p>
 <p>But we can't just wrap this file descriptor in Calloop's <code>generic::Generic</code> source and be done — there are a few subtleties we need to take care of for it to work right and be useful.</p>
 <blockquote>

@@ -178,7 +178,7 @@
 </ul>
 <p>This chapter covers what the first thing means, and how Calloop accomplishes the second thing.</p>
 <h2 id="terminology"><a class="header" href="#terminology">Terminology</a></h2>
-<p>A <em>blocking</em> operation is one that waits for an event to happen, and doesn't use the CPU while it's waiting. For example, if you try to read from a network socket, and there is no data available, the read operation could wait for some indefinite amount of time. Your program will be in a state where it does not need to use any CPU cycles, but it won't proceed until there is data to read.</p>
+<p>A <em>blocking</em> operation is one that waits for an event to happen, and doesn't do anything else while it's waiting. For example, if you try to read from a network socket, and there is no data available, the read operation could wait for some indefinite amount of time. Your program will be in a state where it does not need to use any CPU cycles, or indeed do anything at all, and it won't proceed until there is data to read.</p>
 <p>Examples of blocking operations are:</p>
 <ul>
 <li>waiting for a certain time to elapse</li>
@@ -205,10 +205,10 @@ do_thing_three().await;
 </code></pre>
 <p>The state of the program is simply given by: what line is it up to? You know if it's done &quot;thing one&quot; because execution has proceeded to line two. No other state is required. In Calloop, however, you will need extra variables and code so that when your callback is called, it knows whether to run <code>do_thing_one()</code>, <code>do_thing_two()</code>, or <code>do_thing_three()</code>.</p>
 <h2 id="never-block-the-loop"><a class="header" href="#never-block-the-loop">Never block the loop!</a></h2>
-<p>Both of the above principles lead us to the most important rule of event loop code: <strong>never block the loop!</strong> This means: never use blocking calls inside one of your event callbacks. Do not use synchronous file <code>write()</code> calls in a callback. Do not <code>sleep()</code> in a callback. Do not <code>join()</code> a thread in a callback. Don't you do it!</p>
+<p>All of this leads us to the most important rule of event loop code: <strong>never block the loop!</strong> This means: never use blocking calls inside one of your event callbacks. Do not use synchronous file <code>write()</code> calls in a callback. Do not <code>sleep()</code> in a callback. Do not <code>join()</code> a thread in a callback. Don't you do it!</p>
 <p>If you do, the event loop will have no way to proceed, and just... wait for your blocking operation to complete. Nothing is going to run in a parallel thread. Nothing is going to stop your callback and move on to the next one. If your callback needs to wait for a blocking operation, your code must allow it to keep track of where it's up to, return from the callback, and wait for the event like any other.</p>
 <h2 id="calloop-and-composition"><a class="header" href="#calloop-and-composition">Calloop and composition</a></h2>
-<p>Calloop is designed to work by <em>composition</em>. This means that you build up more complex logic in your program by combining simpler event sources. Want a network socket with custom backoff/timeout logic? Create a type containing a network socket from the <a href="api/calloop/io/">async IO adapter</a>, a <a href="api/calloop/timer">timer</a>, and add your backoff state logic. There is a much more detailed example of composition in our <a href="ch03-00-a-full-example-zeromq.html">ZeroMQ example</a>.</p>
+<p>Calloop is designed to work by <em>composition</em>. This means that you build up more complex logic in your program by combining simpler event sources into more complex ones. Want a network socket with custom backoff/timeout logic? Create a type containing a network socket from the <a href="api/calloop/io/">async IO adapter</a>, a <a href="api/calloop/timer">timer</a>, and tie them together with your backoff logic and state. There is a much more detailed example of composition in our <a href="ch03-00-a-full-example-zeromq.html">ZeroMQ example</a>.</p>
 
                     </main>
 
