@@ -339,7 +339,7 @@
 <p>Breaking this down:</p>
 <ul>
 <li>
-<p>We obtain a handle from the event loop. Much like the timer handle above, this is a separate type from the event loop and allows us to insert sources from event callbacks, other threads, and futures.</p>
+<p>We obtain a handle from the event loop. Much like the timer handle above, this is a separate type from the event loop and allows us to insert events sources. Event sources can be added to the loop from eg. your main function, within event callbacks, and futures. Note that it is <em>not</em> safe to pass across threads!</p>
 </li>
 <li>
 <p>We insert the source using <code>LoopHandle::insert_source()</code>.</p>
