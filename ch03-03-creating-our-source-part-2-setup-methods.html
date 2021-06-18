@@ -200,54 +200,43 @@ pub fn from_socket(socket: zmq::Socket) -&gt; io::Result&lt;(Self, calloop::chan
 <h2 id="trait-methods-registering-sources"><a class="header" href="#trait-methods-registering-sources">Trait methods: registering sources</a></h2>
 <p>Calloop's event sources have a kind of life cycle, starting with <em>registration</em>. When you add an event source to the event loop, under the hood the source will <em>register</em> itself with the loop. Under certain circumstances a source will need to re-register itself. And finally there is the <em>unregister</em> action when an event source is removed from the loop. These are expressed via the <code>calloop::EventSource</code> methods:</p>
 <ul>
-<li><code>fn register(&amp;mut self, poll: &amp;mut calloop::Poll, token: calloop::Token) -&gt; std::io::Result&lt;()&gt;</code></li>
-<li><code>fn reregister(&amp;mut self, poll: &amp;mut calloop::Poll, token: calloop::Token) -&gt; std::io::Result&lt;()&gt;</code></li>
+<li><code>fn register(&amp;mut self, poll: &amp;mut calloop::Poll, token_factory: &amp;mut calloop::TokenFactory) -&gt; std::io::Result&lt;()&gt;</code></li>
+<li><code>fn reregister(&amp;mut self, poll: &amp;mut calloop::Poll, token_factory: &amp;mut calloop::TokenFactory) -&gt; std::io::Result&lt;()&gt;</code></li>
 <li><code>fn unregister(&amp;mut self, poll: &amp;mut calloop::Poll) -&gt; std::io::Result&lt;()&gt;</code></li>
 </ul>
-<p>The first two methods take a <em>token</em>, which is a way for your source to know why it was woken up. You can set the <code>sub_id</code> field to be different for each of your own internal sources, and check this in your <code>process_events()</code> function. Note that a <code>sub_id</code> of 0 corresponds to an event generated for the entire source, so your internal IDs should start at 1.</p>
-<p>Let's define our token sub-IDs in the type's definition:</p>
-<pre><code class="language-rust noplayground">impl&lt;T&gt; ZeroMQSource&lt;T&gt;
-where
-    T: IntoIterator,
-    T::Item: Into&lt;zmq::Message&gt;,
+<p>The first two methods take a <em>token factory</em>, which is a way for Calloop to keep track of why your source was woken up. When we get to actually processing events, you'll see how this works. But for now, all you need to do is recursively pass the token factory into whatever sources your own event source is composed of. This includes other composed sources, which will pass the token factory into <em>their</em> sources, and so on.</p>
+<p>In practise this looks like:</p>
+<pre><code class="language-rust noplayground">fn register(
+    &amp;mut self,
+    poll: &amp;mut calloop::Poll,
+    token_factory: &amp;mut calloop::TokenFactory
+) -&gt; io::Result&lt;()&gt;
 {
-    const ID_CHANNEL: u32 = 1;
-    const ID_SOCKET: u32 = 2;
-    const ID_WAKER: u32 = 3;
-    // ...
+    self.socket_source.register(poll, token_factory)?;
+    self.mpsc_receiver.register(poll, token_factory)?;
+    self.wake_ping_receiver.register(poll, token_factory)?;
+    self.wake_ping_sender.ping();
+
+    Ok(())
 }
-</code></pre>
-<p>We use these in our registration functions like so:</p>
-<pre><code class="language-rust noplayground">    fn register(&amp;mut self, poll: &amp;mut calloop::Poll, token: calloop::Token) -&gt; io::Result&lt;()&gt; {
-        let tk_socket = token.with_sub_id(Self::ID_SOCKET);
-        let tk_channel = token.with_sub_id(Self::ID_CHANNEL);
-        let tk_waker = token.with_sub_id(Self::ID_WAKER);
 
-        self.socket_source.register(poll, tk_socket)?;
-        self.mpsc_receiver.register(poll, tk_channel)?;
-        self.wake_ping_receiver.register(poll, tk_waker)?;
+fn reregister(
+    &amp;mut self,
+    poll: &amp;mut calloop::Poll,
+    token_factory: &amp;mut calloop::TokenFactory
+) -&gt; io::Result&lt;()&gt;
+{
+    self.socket_source.reregister(poll, token_factory)?;
+    self.mpsc_receiver.reregister(poll, token_factory)?;
+    self.wake_ping_receiver.reregister(poll, token_factory)?;
 
-        self.wake_ping_sender.ping();
+    self.wake_ping_sender.ping();
 
-        Ok(())
-    }
-
-    fn reregister(&amp;mut self, poll: &amp;mut calloop::Poll, token: calloop::Token) -&gt; io::Result&lt;()&gt; {
-        let tk_socket = token.with_sub_id(Self::ID_SOCKET);
-        let tk_channel = token.with_sub_id(Self::ID_CHANNEL);
-        let tk_waker = token.with_sub_id(Self::ID_WAKER);
-
-        self.socket_source.reregister(poll, tk_socket)?;
-        self.mpsc_receiver.reregister(poll, tk_channel)?;
-        self.wake_ping_receiver.reregister(poll, tk_waker)?;
-
-        self.wake_ping_sender.ping();
-
-        Ok(())
-    }
+    Ok(())
+}
 
 
-fn unregister(&amp;mut self, poll: &amp;mut calloop::Poll) -&gt; std::io::Result&lt;()&gt; {
+fn unregister(&amp;mut self, poll: &amp;mut calloop::Poll)-&gt; std::io::Result&lt;()&gt; {
     self.socket_source.unregister(poll)?;
     self.mpsc_receiver.unregister(poll)?;
     self.wake_ping_receiver.unregister(poll)?;
