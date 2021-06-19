@@ -170,6 +170,134 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="run-async-code"><a class="header" href="#run-async-code">Run async code</a></h1>
+<blockquote>
+<h2 id="enable-the-executor-feature"><a class="header" href="#enable-the-executor-feature">Enable the executor feature!</a></h2>
+<p>To use <code>calloop::futures</code> you need to enable the <code>executor</code> feature in your <code>Cargo.toml</code> like so:</p>
+<pre><code class="language-toml">[dependencies.calloop]
+features = [ &quot;executor&quot; ]
+version = ...
+</code></pre>
+</blockquote>
+<p>Let's say you have some async code that looks like this:</p>
+<pre><code class="language-rust noplayground">use std::time::Duration;
+use async_std::task::sleep;
+
+sleep(Duration::from_secs(1)).await;
+print!(&quot;Hello, &quot;);
+sleep(Duration::from_secs(1)).await;
+println!(&quot;world!&quot;);
+&quot;Bye!&quot;
+</code></pre>
+<p>To run it in Calloop, you use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+</span><span class="boring">
+</span><span class="boring">use async_std::task::sleep;
+</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span>    let (exec, sched) = calloop::futures::executor()?;
+<span class="boring">
+</span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;{}&quot;, event);
+</span><span class="boring">        loop_signaller.stop();
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let async_task = async {
+</span><span class="boring">        sleep(Duration::from_secs(1)).await;
+</span><span class="boring">        println!(&quot;Hello,&quot;);
+</span><span class="boring">        sleep(Duration::from_secs(1)).await;
+</span><span class="boring">        println!(&quot;world!&quot;);
+</span><span class="boring">        &quot;Bye!&quot;
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    sched.schedule(async_task).unwrap();
+</span><span class="boring">
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>The <em>executor</em>, the part that <em>executes</em> the future, goes in the event loop:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+</span><span class="boring">
+</span><span class="boring">use async_std::task::sleep;
+</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span>    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
+    let handle = event_loop.handle();
+
+    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+        // Print the value of the async block ie. the return value.
+        println!(&quot;{}&quot;, event);
+        loop_signaller.stop();
+    })?;
+<span class="boring">
+</span><span class="boring">    let async_task = async {
+</span><span class="boring">        sleep(Duration::from_secs(1)).await;
+</span><span class="boring">        println!(&quot;Hello,&quot;);
+</span><span class="boring">        sleep(Duration::from_secs(1)).await;
+</span><span class="boring">        println!(&quot;world!&quot;);
+</span><span class="boring">        &quot;Bye!&quot;
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    sched.schedule(async_task).unwrap();
+</span><span class="boring">
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>Note that we haven't even done anything with any async code yet. We could, but we don't <em>have</em> to. It can happen in any order. The executor will sit there in the loop until the scheduler tells it there's something to run. So let's do that:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+</span><span class="boring">
+</span><span class="boring">use async_std::task::sleep;
+</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;{}&quot;, event);
+</span><span class="boring">        loop_signaller.stop();
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span>    let async_task = async {
+        sleep(Duration::from_secs(1)).await;
+        println!(&quot;Hello,&quot;);
+        sleep(Duration::from_secs(1)).await;
+        println!(&quot;world!&quot;);
+        &quot;Bye!&quot;
+    };
+
+    sched.schedule(async_task).unwrap();
+
+    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+<span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>Now the async code will be run as expected in our loop, printing:</p>
+<pre><code>Hello,
+world!
+Bye!
+</code></pre>
+<p>...with a one second delay after the &quot;<code>Hello,</code>&quot;.</p>
+<p>Other tips:</p>
+<ul>
+<li>If you need to send data repeatedly, use a channel. The sending end of an MPSC channel can be cloned or moved into an async block, and the receiving end can be added to the event loop as a source.</li>
+<li>If Calloop is missing an event source or abstraction you need, see if there's an async crate for it!</li>
+</ul>
 
                     </main>
 
