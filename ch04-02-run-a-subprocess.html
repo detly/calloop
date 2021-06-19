@@ -170,6 +170,13 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="run-a-subprocess"><a class="header" href="#run-a-subprocess">Run a subprocess</a></h1>
+<p>This one is pretty easy after reading <a href="ch04-01-run-async-code.html">how to run async code</a>!</p>
+<ol>
+<li>Add a dependency on <a href="https://crates.io/crates/async-process"><code>async_process</code></a>.</li>
+<li>Use it in an <code>async</code> block.</li>
+<li>Add the async block to the loop with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>.</li>
+</ol>
+<p>And you're done!</p>
 
                     </main>
 

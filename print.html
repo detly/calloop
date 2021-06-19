@@ -1193,21 +1193,28 @@ println!(&quot;world!&quot;);
 <p>To run it in Calloop, you use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
 <pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
 </span><span class="boring">
+</span><span class="boring">// async-std = &quot;1.9&quot;
 </span><span class="boring">use async_std::task::sleep;
 </span><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span>    let (exec, sched) = calloop::futures::executor()?;
 <span class="boring">
+</span><span class="boring">
+</span><span class="boring">    // Just like in the timer example, we want to use a LoopSignal as the loop
+</span><span class="boring">    // data so we can exit the program later.
 </span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
 </span><span class="boring">    let handle = event_loop.handle();
 </span><span class="boring">
 </span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
 </span><span class="boring">        // Print the value of the async block ie. the return value.
 </span><span class="boring">        println!(&quot;{}&quot;, event);
+</span><span class="boring">        // Stop the loop.
 </span><span class="boring">        loop_signaller.stop();
 </span><span class="boring">    })?;
 </span><span class="boring">
+</span><span class="boring">
+</span><span class="boring">    // Our toy async code.
 </span><span class="boring">    let async_task = async {
 </span><span class="boring">        sleep(Duration::from_secs(1)).await;
 </span><span class="boring">        println!(&quot;Hello,&quot;);
@@ -1216,8 +1223,10 @@ println!(&quot;world!&quot;);
 </span><span class="boring">        &quot;Bye!&quot;
 </span><span class="boring">    };
 </span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
 </span><span class="boring">    sched.schedule(async_task).unwrap();
 </span><span class="boring">
+</span><span class="boring">    // Run the event loop.
 </span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
 </span><span class="boring">
 </span><span class="boring">    Ok(())
@@ -1226,21 +1235,28 @@ println!(&quot;world!&quot;);
 <p>The <em>executor</em>, the part that <em>executes</em> the future, goes in the event loop:</p>
 <pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
 </span><span class="boring">
+</span><span class="boring">// async-std = &quot;1.9&quot;
 </span><span class="boring">use async_std::task::sleep;
 </span><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
 </span><span class="boring">
-</span>    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
+</span>
+    // Just like in the timer example, we want to use a LoopSignal as the loop
+    // data so we can exit the program later.
+    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
     let handle = event_loop.handle();
 
     handle.insert_source(exec, |event, _metadata, loop_signaller| {
         // Print the value of the async block ie. the return value.
         println!(&quot;{}&quot;, event);
+        // Stop the loop.
         loop_signaller.stop();
     })?;
 <span class="boring">
+</span><span class="boring">
+</span><span class="boring">    // Our toy async code.
 </span><span class="boring">    let async_task = async {
 </span><span class="boring">        sleep(Duration::from_secs(1)).await;
 </span><span class="boring">        println!(&quot;Hello,&quot;);
@@ -1249,8 +1265,10 @@ println!(&quot;world!&quot;);
 </span><span class="boring">        &quot;Bye!&quot;
 </span><span class="boring">    };
 </span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
 </span><span class="boring">    sched.schedule(async_task).unwrap();
 </span><span class="boring">
+</span><span class="boring">    // Run the event loop.
 </span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
 </span><span class="boring">
 </span><span class="boring">    Ok(())
@@ -1259,22 +1277,29 @@ println!(&quot;world!&quot;);
 <p>Note that we haven't even done anything with any async code yet. We could, but we don't <em>have</em> to. It can happen in any order. The executor will sit there in the loop until the scheduler tells it there's something to run. So let's do that:</p>
 <pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
 </span><span class="boring">
+</span><span class="boring">// async-std = &quot;1.9&quot;
 </span><span class="boring">use async_std::task::sleep;
 </span><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
 </span><span class="boring">
+</span><span class="boring">
+</span><span class="boring">    // Just like in the timer example, we want to use a LoopSignal as the loop
+</span><span class="boring">    // data so we can exit the program later.
 </span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
 </span><span class="boring">    let handle = event_loop.handle();
 </span><span class="boring">
 </span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
 </span><span class="boring">        // Print the value of the async block ie. the return value.
 </span><span class="boring">        println!(&quot;{}&quot;, event);
+</span><span class="boring">        // Stop the loop.
 </span><span class="boring">        loop_signaller.stop();
 </span><span class="boring">    })?;
 </span><span class="boring">
-</span>    let async_task = async {
+</span>
+    // Our toy async code.
+    let async_task = async {
         sleep(Duration::from_secs(1)).await;
         println!(&quot;Hello,&quot;);
         sleep(Duration::from_secs(1)).await;
@@ -1282,8 +1307,10 @@ println!(&quot;world!&quot;);
         &quot;Bye!&quot;
     };
 
+    // Schedule the async block to be run in the event loop.
     sched.schedule(async_task).unwrap();
 
+    // Run the event loop.
     event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
 <span class="boring">
 </span><span class="boring">    Ok(())
@@ -1297,10 +1324,18 @@ Bye!
 <p>...with a one second delay after the &quot;<code>Hello,</code>&quot;.</p>
 <p>Other tips:</p>
 <ul>
+<li>Remember that the value of your async block is the last expression ie. it is effectively &quot;returned&quot; from the block, which means it will be provided to your executor's callback as the first argument.</li>
 <li>If you need to send data repeatedly, use a channel. The sending end of an MPSC channel can be cloned or moved into an async block, and the receiving end can be added to the event loop as a source.</li>
 <li>If Calloop is missing an event source or abstraction you need, see if there's an async crate for it!</li>
 </ul>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="run-a-subprocess"><a class="header" href="#run-a-subprocess">Run a subprocess</a></h1>
+<p>This one is pretty easy after reading <a href="ch04-01-run-async-code.html">how to run async code</a>!</p>
+<ol>
+<li>Add a dependency on <a href="https://crates.io/crates/async-process"><code>async_process</code></a>.</li>
+<li>Use it in an <code>async</code> block.</li>
+<li>Add the async block to the loop with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>.</li>
+</ol>
+<p>And you're done!</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="use-blocking-io-types"><a class="header" href="#use-blocking-io-types">Use blocking IO types</a></h1>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="use-a-network-socket"><a class="header" href="#use-a-network-socket">Use a network socket</a></h1>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="write-integration-tests"><a class="header" href="#write-integration-tests">Write integration tests</a></h1>
