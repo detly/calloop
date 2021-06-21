@@ -1181,153 +1181,301 @@ version = ...
 </code></pre>
 </blockquote>
 <p>Let's say you have some async code that looks like this:</p>
-<pre><code class="language-rust noplayground">use std::time::Duration;
-use async_std::task::sleep;
-
-sleep(Duration::from_secs(1)).await;
-print!(&quot;Hello, &quot;);
-sleep(Duration::from_secs(1)).await;
-println!(&quot;world!&quot;);
-&quot;Bye!&quot;
+<pre><code class="language-rust noplayground">sender.send(&quot;Hello,&quot;).await.ok();
+receiver.next().await.map(|m| println!(&quot;Received: {}&quot;, m));
+sender.send(&quot;world!&quot;).await.ok();
+receiver.next().await.map(|m| println!(&quot;Received: {}&quot;, m));
+&quot;So long!&quot;
 </code></pre>
-<p>To run it in Calloop, you use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
-<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+<p>...and a corresponding block that receives and sends to this one. I will call one of these blocks &quot;friendly&quot; and the other one &quot;aloof&quot;.</p>
+<p>To run async code in Calloop, you use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
-</span><span class="boring">// async-std = &quot;1.9&quot;
-</span><span class="boring">use async_std::task::sleep;
-</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::sink::SinkExt;
+</span><span class="boring">use futures::stream::StreamExt;
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span>    let (exec, sched) = calloop::futures::executor()?;
 <span class="boring">
-</span><span class="boring">
 </span><span class="boring">    // Just like in the timer example, we want to use a LoopSignal as the loop
 </span><span class="boring">    // data so we can exit the program later.
 </span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
 </span><span class="boring">    let handle = event_loop.handle();
 </span><span class="boring">
-</span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, loop_signaller| {
 </span><span class="boring">        // Print the value of the async block ie. the return value.
-</span><span class="boring">        println!(&quot;{}&quot;, event);
-</span><span class="boring">        // Stop the loop.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">        // Stop the loop when all blocks have run.
 </span><span class="boring">        loop_signaller.stop();
 </span><span class="boring">    })?;
 </span><span class="boring">
+</span><span class="boring">    // Let's create two channels for our async blocks below. The blocks will
+</span><span class="boring">    // exchange messages via these channels.
+</span><span class="boring">    let (mut sender_friendly, mut receiver_friendly) = futures::channel::mpsc::unbounded();
+</span><span class="boring">    let (mut sender_aloof, mut receiver_aloof) = futures::channel::mpsc::unbounded();
 </span><span class="boring">
 </span><span class="boring">    // Our toy async code.
-</span><span class="boring">    let async_task = async {
-</span><span class="boring">        sleep(Duration::from_secs(1)).await;
-</span><span class="boring">        println!(&quot;Hello,&quot;);
-</span><span class="boring">        sleep(Duration::from_secs(1)).await;
-</span><span class="boring">        println!(&quot;world!&quot;);
+</span><span class="boring">    let async_friendly_task = async move {
+</span><span class="boring">        sender_friendly.send(&quot;Hello,&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
+</span><span class="boring">        sender_friendly.send(&quot;world!&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
 </span><span class="boring">        &quot;Bye!&quot;
 </span><span class="boring">    };
 </span><span class="boring">
+</span><span class="boring">    let async_aloof_task = async move {
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;Oh,&quot;).await.ok();
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;it's you.&quot;).await.ok();
+</span><span class="boring">        &quot;Regards.&quot;
+</span><span class="boring">    };
+</span><span class="boring">
 </span><span class="boring">    // Schedule the async block to be run in the event loop.
-</span><span class="boring">    sched.schedule(async_task).unwrap();
+</span><span class="boring">    sched.schedule(async_aloof_task).unwrap();
+</span><span class="boring">    sched.schedule(async_friendly_task).unwrap();
 </span><span class="boring">
 </span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop.&quot;);
 </span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
 </span><span class="boring">
 </span><span class="boring">    Ok(())
 </span><span class="boring">}
 </span></code></pre></pre>
 <p>The <em>executor</em>, the part that <em>executes</em> the future, goes in the event loop:</p>
-<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
-</span><span class="boring">// async-std = &quot;1.9&quot;
-</span><span class="boring">use async_std::task::sleep;
-</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::sink::SinkExt;
+</span><span class="boring">use futures::stream::StreamExt;
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
 </span><span class="boring">
-</span>
-    // Just like in the timer example, we want to use a LoopSignal as the loop
+</span>    // Just like in the timer example, we want to use a LoopSignal as the loop
     // data so we can exit the program later.
     let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
     let handle = event_loop.handle();
 
-    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+    handle.insert_source(exec, |evt, _metadata, loop_signaller| {
         // Print the value of the async block ie. the return value.
-        println!(&quot;{}&quot;, event);
-        // Stop the loop.
+        println!(&quot;Async block ended with: {}&quot;, evt);
+        // Stop the loop when all blocks have run.
         loop_signaller.stop();
     })?;
 <span class="boring">
+</span><span class="boring">    // Let's create two channels for our async blocks below. The blocks will
+</span><span class="boring">    // exchange messages via these channels.
+</span><span class="boring">    let (mut sender_friendly, mut receiver_friendly) = futures::channel::mpsc::unbounded();
+</span><span class="boring">    let (mut sender_aloof, mut receiver_aloof) = futures::channel::mpsc::unbounded();
 </span><span class="boring">
 </span><span class="boring">    // Our toy async code.
-</span><span class="boring">    let async_task = async {
-</span><span class="boring">        sleep(Duration::from_secs(1)).await;
-</span><span class="boring">        println!(&quot;Hello,&quot;);
-</span><span class="boring">        sleep(Duration::from_secs(1)).await;
-</span><span class="boring">        println!(&quot;world!&quot;);
+</span><span class="boring">    let async_friendly_task = async move {
+</span><span class="boring">        sender_friendly.send(&quot;Hello,&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
+</span><span class="boring">        sender_friendly.send(&quot;world!&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
 </span><span class="boring">        &quot;Bye!&quot;
 </span><span class="boring">    };
 </span><span class="boring">
+</span><span class="boring">    let async_aloof_task = async move {
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;Oh,&quot;).await.ok();
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;it's you.&quot;).await.ok();
+</span><span class="boring">        &quot;Regards.&quot;
+</span><span class="boring">    };
+</span><span class="boring">
 </span><span class="boring">    // Schedule the async block to be run in the event loop.
-</span><span class="boring">    sched.schedule(async_task).unwrap();
+</span><span class="boring">    sched.schedule(async_aloof_task).unwrap();
+</span><span class="boring">    sched.schedule(async_friendly_task).unwrap();
 </span><span class="boring">
 </span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop.&quot;);
 </span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
 </span><span class="boring">
 </span><span class="boring">    Ok(())
 </span><span class="boring">}
 </span></code></pre></pre>
-<p>Note that we haven't even done anything with any async code yet. We could, but we don't <em>have</em> to. It can happen in any order. The executor will sit there in the loop until the scheduler tells it there's something to run. So let's do that:</p>
-<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use std::time::Duration;
+<p>Now let's write our async code in full:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::{EventLoop, LoopSignal};
 </span><span class="boring">
-</span><span class="boring">// async-std = &quot;1.9&quot;
-</span><span class="boring">use async_std::task::sleep;
-</span><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::sink::SinkExt;
+</span><span class="boring">use futures::stream::StreamExt;
 </span><span class="boring">
 </span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
 </span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
-</span><span class="boring">
 </span><span class="boring">
 </span><span class="boring">    // Just like in the timer example, we want to use a LoopSignal as the loop
 </span><span class="boring">    // data so we can exit the program later.
 </span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
 </span><span class="boring">    let handle = event_loop.handle();
 </span><span class="boring">
-</span><span class="boring">    handle.insert_source(exec, |event, _metadata, loop_signaller| {
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, loop_signaller| {
 </span><span class="boring">        // Print the value of the async block ie. the return value.
-</span><span class="boring">        println!(&quot;{}&quot;, event);
-</span><span class="boring">        // Stop the loop.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">        // Stop the loop when all blocks have run.
 </span><span class="boring">        loop_signaller.stop();
 </span><span class="boring">    })?;
 </span><span class="boring">
-</span>
+</span>    // Let's create two channels for our async blocks below. The blocks will
+    // exchange messages via these channels.
+    let (mut sender_friendly, mut receiver_friendly) = futures::channel::mpsc::unbounded();
+    let (mut sender_aloof, mut receiver_aloof) = futures::channel::mpsc::unbounded();
+
     // Our toy async code.
-    let async_task = async {
-        sleep(Duration::from_secs(1)).await;
-        println!(&quot;Hello,&quot;);
-        sleep(Duration::from_secs(1)).await;
-        println!(&quot;world!&quot;);
+    let async_friendly_task = async move {
+        sender_friendly.send(&quot;Hello,&quot;).await.ok();
+        receiver_aloof
+            .next()
+            .await
+            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
+        sender_friendly.send(&quot;world!&quot;).await.ok();
+        receiver_aloof
+            .next()
+            .await
+            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
         &quot;Bye!&quot;
     };
 
-    // Schedule the async block to be run in the event loop.
-    sched.schedule(async_task).unwrap();
+    let async_aloof_task = async move {
+        receiver_friendly
+            .next()
+            .await
+            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+        sender_aloof.send(&quot;Oh,&quot;).await.ok();
+        receiver_friendly
+            .next()
+            .await
+            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+        sender_aloof.send(&quot;it's you.&quot;).await.ok();
+        &quot;Regards.&quot;
+    };
+<span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_aloof_task).unwrap();
+</span><span class="boring">    sched.schedule(async_friendly_task).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>Like any block in Rust, the value of your async block is the last expression ie. it is effectively &quot;returned&quot; from the block, which means it will be provided to your executor's callback as the first argument (the &quot;event&quot;). You'll see this in the output with the <code>Async block ended with: ...</code> lines.</p>
+<p>Finally, we run the loop:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::{EventLoop, LoopSignal};
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::sink::SinkExt;
+</span><span class="boring">use futures::stream::StreamExt;
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    // Just like in the timer example, we want to use a LoopSignal as the loop
+</span><span class="boring">    // data so we can exit the program later.
+</span><span class="boring">    let mut event_loop: EventLoop&lt;LoopSignal&gt; = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, loop_signaller| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">        // Stop the loop when all blocks have run.
+</span><span class="boring">        loop_signaller.stop();
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    // Let's create two channels for our async blocks below. The blocks will
+</span><span class="boring">    // exchange messages via these channels.
+</span><span class="boring">    let (mut sender_friendly, mut receiver_friendly) = futures::channel::mpsc::unbounded();
+</span><span class="boring">    let (mut sender_aloof, mut receiver_aloof) = futures::channel::mpsc::unbounded();
+</span><span class="boring">
+</span><span class="boring">    // Our toy async code.
+</span><span class="boring">    let async_friendly_task = async move {
+</span><span class="boring">        sender_friendly.send(&quot;Hello,&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
+</span><span class="boring">        sender_friendly.send(&quot;world!&quot;).await.ok();
+</span><span class="boring">        receiver_aloof
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Aloof said: {}&quot;, m));
+</span><span class="boring">        &quot;Bye!&quot;
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    let async_aloof_task = async move {
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;Oh,&quot;).await.ok();
+</span><span class="boring">        receiver_friendly
+</span><span class="boring">            .next()
+</span><span class="boring">            .await
+</span><span class="boring">            .map(|m| println!(&quot;Friendly said: {}&quot;, m));
+</span><span class="boring">        sender_aloof.send(&quot;it's you.&quot;).await.ok();
+</span><span class="boring">        &quot;Regards.&quot;
+</span><span class="boring">    };
+</span><span class="boring">
+</span>    // Schedule the async block to be run in the event loop.
+    sched.schedule(async_aloof_task).unwrap();
+    sched.schedule(async_friendly_task).unwrap();
 
     // Run the event loop.
+    println!(&quot;Starting event loop.&quot;);
     event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+    println!(&quot;Event loop ended.&quot;);
 <span class="boring">
 </span><span class="boring">    Ok(())
 </span><span class="boring">}
 </span></code></pre></pre>
-<p>Now the async code will be run as expected in our loop, printing:</p>
-<pre><code>Hello,
-world!
-Bye!
+<p>And our output looks like:</p>
+<pre><code class="language-text">Starting event loop.
+Friendly said: Hello,
+Aloof said: Oh,
+Friendly said: world!
+Async block ended with: Regards.
+Aloof said: it's you.
+Async block ended with: Bye!
+Event loop ended.
 </code></pre>
-<p>...with a one second delay after the &quot;<code>Hello,</code>&quot;.</p>
-<p>Other tips:</p>
-<ul>
-<li>Remember that the value of your async block is the last expression ie. it is effectively &quot;returned&quot; from the block, which means it will be provided to your executor's callback as the first argument.</li>
-<li>If you need to send data repeatedly, use a channel. The sending end of an MPSC channel can be cloned or moved into an async block, and the receiving end can be added to the event loop as a source.</li>
-<li>If Calloop is missing an event source or abstraction you need, see if there's an async crate for it!</li>
-</ul>
+<p>Note that for the sake of keeping this example short, I've written the async code before running the loop. But async code can be scheduled from callbacks, or other sources within the loop too.</p>
+<blockquote>
+<h2 id="note-about-threads"><a class="header" href="#note-about-threads">Note about threads</a></h2>
+<p>One of Calloop's strengths is that it is completely single threaded as written. However, many async crates are implemented using threads eg. <code>async-std</code> and <code>async-process</code>. This is not an inherent problem! Calloop will work perfectly well with such implementations in general. However, if you have selected Calloop because of your own constraints around threading, be aware of this.</p>
+</blockquote>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="run-a-subprocess"><a class="header" href="#run-a-subprocess">Run a subprocess</a></h1>
 <p>This one is pretty easy after reading <a href="ch04-01-run-async-code.html">how to run async code</a>!</p>
 <ol>
