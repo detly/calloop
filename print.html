@@ -1815,6 +1815,12 @@ use futures::io::{AsyncReadExt, AsyncWriteExt};
 </span><span class="boring">    Ok(())
 </span><span class="boring">}
 </span></code></pre></pre>
+<p>And the output we get is:</p>
+<pre><code class="language-text">Starting event loop. Use Ctrl-C to exit.
+Async block ended with: Sent data...
+Async block ended with: Hello, world
+^C
+</code></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="use-a-network-socket"><a class="header" href="#use-a-network-socket">Use a network socket</a></h1>
 <p>This will almost certainly be a specialised case of <a href="ch04-03-use-blocking-io-types.html">adapting a blocking IO type</a> — as long as your socket type implements the <a href="https://doc.rust-lang.org/stable/std/os/unix/io/trait.AsRawFd.html"><code>AsRawFd</code></a> trait, you can use the approach there.</p>
 <p>If it is something more sophisticated, it may expose some other way to integrate with event loops eg. exposing a file descriptor for notification like <a href="ch03-00-a-full-example-zeromq.html">ZeroMQ does</a>. In that case you can create a new type that combines components from Calloop to utilise such an interface.</p>
