@@ -170,6 +170,352 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="use-blocking-io-types"><a class="header" href="#use-blocking-io-types">Use blocking IO types</a></h1>
+<blockquote>
+<h2 id="enable-the-futures-io-feature"><a class="header" href="#enable-the-futures-io-feature">Enable the <code>futures-io</code> feature!</a></h2>
+<p>To use <code>calloop::io</code> you need to enable the <code>futures-io</code> feature in your <code>Cargo.toml</code> like so:</p>
+<pre><code class="language-toml">[dependencies.calloop]
+features = [ &quot;futures-io&quot; ]
+version = ...
+</code></pre>
+<p>Realistically you will probably also want to use this with async code, so you should also enable the <code>executor</code> feature too.</p>
+</blockquote>
+<p>You may find that you need to write async code around blocking IO types. Calloop provides the ability to wrap blocking types — anything that implements the <a href="https://doc.rust-lang.org/stable/std/os/unix/io/trait.AsRawFd.html"><code>AsRawFd</code></a> trait — in its own async type. This can be polled in any executor you may have chosen for your async code, but if you're using Calloop you'll probably be using <a href="api/calloop/futures/fn.executor.html">Calloop's executor</a>.</p>
+<p>Just like in the async example, we will use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span>    let (exec, sched) = calloop::futures::executor()?;
+<span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>The <em>executor</em> goes in the event loop:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span>    let mut event_loop = EventLoop::try_new()?;
+    let handle = event_loop.handle();
+
+    handle.insert_source(exec, |evt, _metadata, _shared| {
+        // Print the value of the async block ie. the return value.
+        println!(&quot;Async block ended with: {}&quot;, evt);
+    })?;
+<span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>For our blocking IO types, let's use an unnamed pair of <a href="https://doc.rust-lang.org/stable/std/os/unix/net/struct.UnixStream.html">Unix domain stream sockets</a>. To convert them to async types, we simply call <a href="api/calloop/struct.LoopHandle.html"><code>calloop::LoopHandle::adapt_io()</code></a>:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span>    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+    let mut sender = handle.adapt_io(sender).unwrap();
+    let mut receiver = handle.adapt_io(receiver).unwrap();
+<span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>Note that most of the useful async functionality for the returned type is expressed through various traits in <a href="https://docs.rs/futures/0.3/futures/io/"><code>futures::io</code></a>. So we need to explicitly <code>use</code> these:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span>// futures = &quot;0.3&quot;
+use futures::io::{AsyncReadExt, AsyncWriteExt};
+<span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>We can now write async code around these types. Here's the receiving code:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span>    let async_receive = async move {
+        let mut buf = [0u8; 12];
+        // Here's our async-ified Unix domain socket.
+        receiver.read_exact(&amp;mut buf).await.unwrap();
+        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+    };
+
+    // Schedule the async block to be run in the event loop.
+    sched.schedule(async_receive).unwrap();
+<span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>And here's the sending code. The receiving and sending code can be created and added to the executor in either order.</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span>    let async_send = async move {
+        // Here's our async-ified Unix domain socket.
+        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+        &quot;Sent data...&quot;.to_owned()
+    };
+
+    // Schedule the async block to be run in the event loop.
+    sched.schedule(async_send).unwrap();
+<span class="boring">
+</span><span class="boring">    // Run the event loop.
+</span><span class="boring">    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+</span><span class="boring">    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+</span><span class="boring">    println!(&quot;Event loop ended.&quot;);
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
+<p>All that's left is to run the loop:</p>
+<pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
+</span><span class="boring">
+</span><span class="boring">// futures = &quot;0.3&quot;
+</span><span class="boring">use futures::io::{AsyncReadExt, AsyncWriteExt};
+</span><span class="boring">
+</span><span class="boring">fn main() -&gt; std::io::Result&lt;()&gt; {
+</span><span class="boring">    let (exec, sched) = calloop::futures::executor()?;
+</span><span class="boring">
+</span><span class="boring">    let mut event_loop = EventLoop::try_new()?;
+</span><span class="boring">    let handle = event_loop.handle();
+</span><span class="boring">
+</span><span class="boring">    handle.insert_source(exec, |evt, _metadata, _shared| {
+</span><span class="boring">        // Print the value of the async block ie. the return value.
+</span><span class="boring">        println!(&quot;Async block ended with: {}&quot;, evt);
+</span><span class="boring">    })?;
+</span><span class="boring">
+</span><span class="boring">    let (sender, receiver) = std::os::unix::net::UnixStream::pair().unwrap();
+</span><span class="boring">    let mut sender = handle.adapt_io(sender).unwrap();
+</span><span class="boring">    let mut receiver = handle.adapt_io(receiver).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_receive = async move {
+</span><span class="boring">        let mut buf = [0u8; 12];
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        receiver.read_exact(&amp;mut buf).await.unwrap();
+</span><span class="boring">        std::str::from_utf8(&amp;buf).unwrap().to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_receive).unwrap();
+</span><span class="boring">
+</span><span class="boring">    let async_send = async move {
+</span><span class="boring">        // Here's our async-ified Unix domain socket.
+</span><span class="boring">        sender.write_all(b&quot;Hello, world!&quot;).await.unwrap();
+</span><span class="boring">        &quot;Sent data...&quot;.to_owned()
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    // Schedule the async block to be run in the event loop.
+</span><span class="boring">    sched.schedule(async_send).unwrap();
+</span><span class="boring">
+</span>    // Run the event loop.
+    println!(&quot;Starting event loop. Use Ctrl-C to exit.&quot;);
+    event_loop.run(None, &amp;mut event_loop.get_signal(), |_| {})?;
+    println!(&quot;Event loop ended.&quot;);
+<span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span></code></pre></pre>
 
                     </main>
 
