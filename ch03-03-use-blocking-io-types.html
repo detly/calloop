@@ -171,6 +171,10 @@
                     <main>
                         <h1 id="use-blocking-io-types"><a class="header" href="#use-blocking-io-types">Use blocking IO types</a></h1>
 <blockquote>
+<p>This section is about adapting blocking IO types for use with <code>async</code> Rust code, and powering that <code>async</code> code with Calloop. If you just want to add blocking IO types to your event loop and use Calloop's callback/composition-based design, you only need to wrap your blocking IO type in a <a href="api/calloop/generic/struct.Generic.html">generic event source</a>.</p>
+</blockquote>
+<p>You may find that you need to write ordinary Rust <code>async</code> code around blocking IO types. Calloop provides the ability to wrap blocking types — anything that implements the <a href="https://doc.rust-lang.org/stable/std/os/unix/io/trait.AsRawFd.html"><code>AsRawFd</code></a> trait — in its own async type. This can be polled in any executor you may have chosen for your async code, but if you're using Calloop you'll probably be using <a href="api/calloop/futures/fn.executor.html">Calloop's executor</a>.</p>
+<blockquote>
 <h2 id="enable-the-futures-io-feature"><a class="header" href="#enable-the-futures-io-feature">Enable the <code>futures-io</code> feature!</a></h2>
 <p>To use <code>calloop::io</code> you need to enable the <code>futures-io</code> feature in your <code>Cargo.toml</code> like so:</p>
 <pre><code class="language-toml">[dependencies.calloop]
@@ -179,7 +183,6 @@ version = ...
 </code></pre>
 <p>Realistically you will probably also want to use this with async code, so you should also enable the <code>executor</code> feature too.</p>
 </blockquote>
-<p>You may find that you need to write async code around blocking IO types. Calloop provides the ability to wrap blocking types — anything that implements the <a href="https://doc.rust-lang.org/stable/std/os/unix/io/trait.AsRawFd.html"><code>AsRawFd</code></a> trait — in its own async type. This can be polled in any executor you may have chosen for your async code, but if you're using Calloop you'll probably be using <a href="api/calloop/futures/fn.executor.html">Calloop's executor</a>.</p>
 <p>Just like in the async example, we will use the components in <a href="api/calloop/futures/"><code>calloop::futures</code></a>. First, obtain both an executor and a scheduler with <a href="api/calloop/futures/fn.executor.html"><code>calloop::futures::executor()</code></a>:</p>
 <pre><pre class="playground"><code class="language-rust edition2018"><span class="boring">use calloop::EventLoop;
 </span><span class="boring">
