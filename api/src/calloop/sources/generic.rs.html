@@ -260,6 +260,8 @@
 <span id="258">258</span>
 <span id="259">259</span>
 <span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
 </pre><pre class="rust">
 <span class="doccomment">//! A generic event source wrapping an IO objects or file descriptor</span>
 <span class="doccomment">//!</span>
@@ -310,6 +312,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">EventSource</span>, <span class="ident">Interest</span>, <span class="ident">Mode</span>, <span class="ident">Poll</span>, <span class="ident">PostAction</span>, <span class="ident">Readiness</span>, <span class="ident">Token</span>, <span class="ident">TokenFactory</span>};
 
 <span class="doccomment">/// A generic event source wrapping a FD-backed type</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Generic</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="doccomment">/// The wrapped FD-backed type</span>
     <span class="kw">pub</span> <span class="ident">file</span>: <span class="ident">F</span>,
@@ -321,6 +324,7 @@
 }
 
 <span class="doccomment">/// A wrapper to insert a raw file descriptor into a `Generic` event source</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Fd</span>(<span class="kw">pub</span> <span class="ident">RawFd</span>);
 
 <span class="kw">impl</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">Fd</span> {

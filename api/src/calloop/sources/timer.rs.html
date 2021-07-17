@@ -529,6 +529,12 @@
 <span id="527">527</span>
 <span id="528">528</span>
 <span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Timer-based event sources</span>
 <span class="doccomment">//!</span>
@@ -556,6 +562,7 @@
 <span class="doccomment">/// It generates events of type `(T, TimerHandle&lt;T&gt;)`, providing you</span>
 <span class="doccomment">/// an handle inside the event callback, allowing you to set new timeouts</span>
 <span class="doccomment">/// as a response to a timeout being reached (for reccuring ticks for example).</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Timer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">TimerInner</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">source</span>: <span class="ident">TimerSource</span>,
@@ -584,6 +591,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This handle can be cloned, and can be sent accross thread as long</span>
 <span class="doccomment">/// as `T: Send`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TimerHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">TimerInner</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
@@ -599,6 +607,7 @@
 }
 
 <span class="doccomment">/// An itentifier to cancel a timeout if necessary</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Timeout</span> {
     <span class="ident">counter</span>: <span class="ident">u32</span>,
 }
@@ -693,12 +702,14 @@
  * Timer logic
  */</span>
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">TimeoutData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">deadline</span>: <span class="ident">Instant</span>,
     <span class="ident">data</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">counter</span>: <span class="ident">u32</span>,
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">TimerInner</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">heap</span>: <span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">TimeoutData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">scheduler</span>: <span class="ident">TimerScheduler</span>,
@@ -805,6 +816,7 @@
  * Scheduling
  */</span>
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">TimerScheduler</span> {
     <span class="ident">current_deadline</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Instant</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">kill_switch</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AtomicBool</span><span class="op">&gt;</span>,

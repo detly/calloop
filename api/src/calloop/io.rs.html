@@ -439,6 +439,14 @@
 <span id="437">437</span>
 <span id="438">438</span>
 <span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Adapters for async IO objects</span>
 <span class="doccomment">//!</span>
@@ -479,6 +487,12 @@
     <span class="ident">dispatcher</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">IoDispatcher</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">inner</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">IoLoopInner</span> <span class="op">+</span> <span class="lifetime">&#39;l</span><span class="op">&gt;</span>,
     <span class="ident">old_flags</span>: <span class="ident">OFlag</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span><span class="op">&gt;</span> <span class="ident">std::fmt::Debug</span> <span class="kw">for</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::fmt::Result</span> {
+        <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;Async&quot;</span>).<span class="ident">field</span>(<span class="string">&quot;fd&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>).<span class="ident">finish</span>()
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span> {
@@ -553,6 +567,7 @@
 }
 
 <span class="doccomment">/// A future that resolves once the associated object becomes ready for reading</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Readable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="ident">io</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span>,
 }
@@ -572,6 +587,7 @@
 }
 
 <span class="doccomment">/// A future that resolves once the associated object becomes ready for writing</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Writable</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="lifetime">&#39;l</span>, <span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span> {
     <span class="ident">io</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="ident">Async</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">F</span><span class="op">&gt;</span>,
 }
